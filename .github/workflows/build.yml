@@ -40,6 +40,7 @@ jobs:
           distribution: temurin
           java-version: 21
           cache: maven
+          server-id: github
 
       - name: Derive version
         id: version
