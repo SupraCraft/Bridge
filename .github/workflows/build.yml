@@ -35,7 +35,7 @@ jobs:
       BRIDGE_OWNER: ${{ github.repository_owner }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
 
       - name: Verify no placeholder versions
         run: |
@@ -45,7 +45,7 @@ jobs:
           fi
 
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287
         with:
           distribution: temurin
           java-version: 21
@@ -88,7 +88,7 @@ jobs:
           mvn -B -DskipTests -DaltDeploymentRepository=pages::default::file://${{ github.workspace }}/docs/maven deploy
 
       - name: Upload built artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: maven-repo
           path: |
@@ -100,7 +100,7 @@ jobs:
 
       - name: Attach JARs to release
         if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@7c4723f7a335432393329f8f1c564994ce50185d
         with:
           tag_name: ${{ inputs.release_tag || github.ref_name }}
           files: |
@@ -112,7 +112,7 @@ jobs:
 
       - name: Upload Pages artifact
         if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
-        uses: actions/upload-pages-artifact@v5
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9
         with:
           path: docs
 
@@ -132,4 +132,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128
