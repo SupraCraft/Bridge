@@ -4,6 +4,12 @@ on:
   push:
     branches: ["**"]
     tags: ["v*"]
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - 'bridge*/**'
+      - 'docs/**'
+      - '.github/workflows/build.yml'
   release:
     types: [published]
   workflow_dispatch:
@@ -11,6 +17,10 @@ on:
       release_tag:
         description: "Tag to publish (for manual runs)"
         required: false
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
