@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "repository": "SupraCraft/Bridge",
+  "upstream_repository": "ME1312/Bridge",
+  "role": "post-compile Maven transformation system and bytecode support library",
+  "source_version": "0.1.0-dev",
+  "artifact": {
+    "group": "io.github.supracraft.bridge",
+    "parent": "bridge-parent",
+    "modules": ["bridge", "bridge-asm", "bridge-plugin", "bridge-test"],
+    "optional_modules": ["bridge-mc-it"],
+    "standalone": [
+      "supracraft-bridge-<version>.jar",
+      "supracraft-bridge-asm-<version>.jar",
+      "supracraft-bridge-plugin-<version>.jar",
+      "supracraft-bridge-sbom-<version>.json"
+    ]
+  },
+  "versioning": {
+    "development_source": "X.Y.Z-dev",
+    "development_ci": "X.Y.Z-dev.<github-run-number>",
+    "release_candidate": "X.Y.Z-rc.N",
+    "release": "X.Y.Z",
+    "release_tag": "vX.Y.Z",
+    "maven_snapshot_semantics": false
+  },
+  "toolchain": {
+    "maven_wrapper": "3.3.4",
+    "maven": "3.9.16",
+    "java_bytecode_release": 21
+  },
+  "validation": {
+    "build": "./mvnw -B verify",
+    "reproducibility": "scripts/verify-reproducible-build.sh",
+    "deploy_tested_artifacts": "scripts/deploy-tested-artifacts.sh",
+    "stage_standalone_artifacts": "scripts/stage-standalone-artifacts.sh",
+    "publication_model": "build-once-promote-tested-bytes"
+  },
+  "provenance": {
+    "source_repository": "SupraCraft/Bridge",
+    "upstream_repository": "ME1312/Bridge",
+    "records_git_commit_ref_run": true,
+    "fixed_archive_output_timestamp": true,
+    "published_maven_bytes_are_tested_bytes": true
+  },
+  "documentation": {
+    "human_entrypoint": "README.md",
+    "agent_instructions": "AGENTS.md",
+    "artifact_identity": "ARTIFACT_IDENTITY.md",
+    "versioning": "VERSIONING.md",
+    "artifact_consumption": "docs/artifact-consumption.md"
+  }
+}
