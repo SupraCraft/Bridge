@@ -46,6 +46,9 @@ import static bridge.mvn.ForkVisitor.*;
 )
 public final class BridgeMojo extends AbstractMojo {
 
+    private static final String CANONICAL_GROUP = "io.github.supracraft.bridge";
+    private static final String LEGACY_GROUP = "net.ME1312.ASM";
+
     /**
      * The maven repository system
      */
@@ -112,23 +115,20 @@ public final class BridgeMojo extends AbstractMojo {
         check: {
             String v1, v2 = project.getProperties().getProperty("bridge.version");
             for (Artifact artifact : project.getArtifacts()) {
-                if (!"net.ME1312.ASM".equalsIgnoreCase(artifact.getGroupId()) ||
-                        !"bridge".equalsIgnoreCase(artifact.getArtifactId()) ||
-                        !"jar".equalsIgnoreCase(artifact.getType()) ||
-                        artifact.getClassifier() != null) continue;
+                if (!isBridgeApiArtifact(artifact)) continue;
                 if (v2 != null) {
                     if (!v2.equalsIgnoreCase(v1 = artifact.getVersion())) {
-                        log.warn("The api version differs from ${bridge.version}: " + v1 + " != " + v2);
+                        log.warn("[BRIDGE-W001] The api version differs from ${bridge.version}: " + v1 + " != " + v2);
                     }
                     break;
                 }
                 if (((v1 = execution.getVersion()) != (v2 = artifact.getVersion())) && (v1 == null || !v1.equalsIgnoreCase(v2))) {
-                    log.warn("The plugin version differs from the api version: " + v1 + " != " + v2);
+                    log.warn("[BRIDGE-W002] The plugin version differs from the api version: " + v1 + " != " + v2);
                 }
                 break check;
             }
             if (v2 != null && !v2.equalsIgnoreCase(v1 = execution.getVersion())) {
-                log.warn("The plugin version differs from ${bridge.version}: " + v1 + " != " + v2);
+                log.warn("[BRIDGE-W003] The plugin version differs from ${bridge.version}: " + v1 + " != " + v2);
             }
         }
         int flags = 0;
@@ -172,10 +172,10 @@ public final class BridgeMojo extends AbstractMojo {
                 case "NO_RECOMPILE":
                 case "SKIP_COMPILE":
                 case "SKIP_RECOMPILE":
-                    log.warn("Skipped previously defined recompilation goal");
+                    log.warn("[BRIDGE-W004] Skipped previously defined recompilation goal");
                     return;
                 default:
-                    log.warn("Unknown recompilation flag: " + flag);
+                    log.warn("[BRIDGE-W005] Unknown recompilation flag: " + flag);
             }
         }
         try {
@@ -316,8 +316,16 @@ public final class BridgeMojo extends AbstractMojo {
             log.info("Recompiled in " + humanize(comptime));
             classpath.setLastModified((Instant.now().getEpochSecond() * 1000) + 1000);
         } catch (Throwable e) {
-            throw new MojoExecutionException(e);
+            throw new MojoExecutionException("[BRIDGE-E001] Bridge transformation failed", e);
         }
+    }
+
+    private static boolean isBridgeApiArtifact(Artifact artifact) {
+        String group = artifact.getGroupId();
+        return (CANONICAL_GROUP.equalsIgnoreCase(group) || LEGACY_GROUP.equalsIgnoreCase(group)) &&
+                "bridge".equalsIgnoreCase(artifact.getArtifactId()) &&
+                "jar".equalsIgnoreCase(artifact.getType()) &&
+                artifact.getClassifier() == null;
     }
 
     private static String humanize(long timing) {
