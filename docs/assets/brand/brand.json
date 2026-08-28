@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.1.0",
+  "project": "Bridge",
+  "identity": "Java bytecode tooling",
+  "metaphor": "a bridge crossing from compiled Java input to transformed bytecode output",
+  "organization_brand": {
+    "name": "SupraCraft",
+    "contract_version": "0.1.0-candidate",
+    "profile_snapshot": "BRAND_PROFILE.json",
+    "governance_source": "SupraCraft/brand-governance-private:profiles/projects/Bridge.json",
+    "runtime_dependency_on_private_repo": false
+  },
+  "assets": {
+    "icon": "assets/brand/icon.svg",
+    "hero": "assets/brand/hero.svg",
+    "jar_icon": "META-INF/supracraft/bridge/icon.svg"
+  },
+  "palette": {
+    "deep_teal": "#102B33",
+    "teal": "#243F46",
+    "slate": "#34494F",
+    "copper": "#C27742",
+    "ivory": "#F2EEE5",
+    "signal_cyan": "#58B9C6"
+  },
+  "rules": [
+    "Present Bridge as Java/JVM tooling first.",
+    "Use bridge geometry, not Minecraft scenery, as the primary metaphor.",
+    "Do not use Oracle Java logos, the Java coffee cup, Duke, or lookalike trade dress.",
+    "Keep claims factual and traceable to repository contracts.",
+    "Prefer flat geometric artwork over photorealistic or highly rendered imagery."
+  ]
+}

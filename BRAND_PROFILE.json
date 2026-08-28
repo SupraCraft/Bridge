@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "organization_brand": "SupraCraft",
+  "brand_contract_version": "0.1.0-candidate",
+  "governance_source": "SupraCraft/brand-governance-private:profiles/projects/Bridge.json",
+  "repository": "SupraCraft/Bridge",
+  "project": "Bridge",
+  "families": ["developer-tooling", "upstream-sensitive-fork"],
+  "status": "candidate",
+  "snapshot_policy": "vendored-reviewed-snapshot-no-private-runtime-dependency",
+  "identity": {
+    "metaphor": "modern bridge carrying program structure across a bytecode transformation boundary",
+    "minecraft_specific": false,
+    "java_context": "Java/JVM heritage through technical layout and bytecode/class-file cues without Oracle/Java logo imitation"
+  },
+  "public_surface": {
+    "manifest": "docs/assets/brand/brand.json",
+    "icon": "docs/assets/brand/icon.svg",
+    "hero": "docs/assets/brand/hero.svg",
+    "guidelines": "docs/brand-guidelines.md"
+  },
+  "packaged_resources": {
+    "bridge_jar_icon": "META-INF/supracraft/bridge/icon.svg",
+    "source_path": "bridge/resources/META-INF/supracraft/bridge/icon.svg"
+  }
+}
