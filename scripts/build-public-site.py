@@ -3,6 +3,7 @@
 
 import argparse
 import json
+import re
 import shutil
 from pathlib import Path
 
@@ -18,6 +19,18 @@ def write_json(path: Path, value):
     path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def replace_fact(page: str, pattern: str, value: str, label: str) -> str:
+    rendered, count = re.subn(
+        pattern,
+        lambda match: f"{match.group(1)}{value}{match.group(2)}",
+        page,
+        count=1,
+    )
+    if count != 1:
+        raise RuntimeError(f"unable to render {label} from PROJECT_CONTRACT.json")
+    return rendered
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="build/public-site")
@@ -31,6 +44,22 @@ def main():
     contract = load_json(ROOT / "PROJECT_CONTRACT.json")
     metadata = load_json(ROOT / "GITHUB_METADATA.json")
     brand = load_json(DOCS / "assets/brand/brand.json")
+
+    page_path = output / "index.html"
+    page = page_path.read_text(encoding="utf-8")
+    page = replace_fact(
+        page,
+        r'(<code id="source-version">)[^<]*(</code>)',
+        contract["source_version"],
+        "source version",
+    )
+    page = replace_fact(
+        page,
+        r'(<span id="java-release">)[^<]*(</span>)',
+        str(contract["toolchain"]["java_bytecode_release"]),
+        "Java bytecode release",
+    )
+    page_path.write_text(page, encoding="utf-8")
 
     write_json(output / "project.json", contract)
     write_json(output / "github.json", metadata)

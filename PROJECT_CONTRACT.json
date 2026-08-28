@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.2.0",
+  "schema_version": "1.3.0",
   "repository": "SupraCraft/Bridge",
   "upstream_repository": "ME1312/Bridge",
   "role": "post-compile Maven transformation system and bytecode support library",
@@ -44,6 +44,7 @@
     "stage_standalone_artifacts": "scripts/stage-standalone-artifacts.sh",
     "documentation_contract": "scripts/check-documentation-contract.sh",
     "public_site_builder": "scripts/build-public-site.py",
+    "public_site_check": "scripts/check-public-site.py",
     "publication_model": "build-once-promote-tested-bytes"
   },
   "diagnostics": {
