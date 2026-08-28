@@ -1,14 +1,41 @@
 ---
 name: Feature Request
-about: Suggest something to add to Bridge ASM
+about: Propose a scoped Bridge capability or compatibility improvement
 
 ---
 
-### What Should Be Added
-Describe what you'd like to see added here.
+## Problem
 
-### Why It Should be Added
-Tell us why you think it should be added. Be sure to include reasons why everyone else would find it useful as well.
+Describe the concrete limitation or repeated maintenance problem.
 
-### What's The Alternative
-Describe alternative methods that may already exist right now that accomplish the same goal, and why they suck.
+## Proposed outcome
+
+Describe what should become possible or more reliable without prescribing unnecessary implementation detail.
+
+## Affected surface
+
+Identify the relevant area:
+
+- Bridge API / ABI
+- bytecode transformation semantics
+- `bridge-asm` helpers
+- Maven plugin/build lifecycle
+- artifact/version/provenance/publication
+- Minecraft integration fixture
+- automation/documentation/operator experience
+
+## Evidence / motivation
+
+Explain why the feature is worth maintaining. Include consumer failures, repeated manual work, missing upstream capability, or another concrete signal when available.
+
+## Alternatives
+
+Describe simpler existing approaches and why they do not adequately solve the problem. Prefer established JVM/Maven/ASM mechanisms over bespoke infrastructure when possible.
+
+## Compatibility and maintenance cost
+
+Call out API/ABI impact, additional runtime/build/CI cost, new dependencies, publication changes, or upstream-flowability concerns.
+
+## Acceptance criteria
+
+List the smallest deterministic conditions that would prove the feature useful and complete.
