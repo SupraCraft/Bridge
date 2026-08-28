@@ -11,9 +11,16 @@
     <url>https://github.com/SupraCraft/Bridge</url>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.release>21</maven.compiler.release>
-        <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+        <maven.compiler.plugin.version>3.15.0</maven.compiler.plugin.version>
         <maven.jar.plugin.version>3.4.2</maven.jar.plugin.version>
+        <maven.enforcer.plugin.version>3.6.3</maven.enforcer.plugin.version>
+        <maven.plugin.plugin.version>3.15.2</maven.plugin.plugin.version>
+        <maven.javadoc.plugin.version>3.11.3</maven.javadoc.plugin.version>
+        <maven.surefire.plugin.version>3.5.6</maven.surefire.plugin.version>
+        <maven.api.version>3.9.16</maven.api.version>
         <cyclonedx.maven.plugin.version>2.9.3</cyclonedx.maven.plugin.version>
         <bridge.version>${project.version}</bridge.version>
         <build.commit>unknown</build.commit>
@@ -46,6 +53,29 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>${maven.enforcer.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>enforce-build-baseline</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>[3.9.0,4.0.0)</version>
+                                </requireMavenVersion>
+                                <requireJavaVersion>
+                                    <version>[21,)</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
