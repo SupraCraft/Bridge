@@ -28,12 +28,16 @@ Every distributable artifact should record at least:
 
 CycloneDX metadata and release evidence should carry the same source identity.
 
-Canonical standalone release filenames should be human-identifiable, for example:
+Canonical standalone CI/release files are staged separately from Maven repository layout:
 
 - `supracraft-bridge-<version>.jar`
 - `supracraft-bridge-asm-<version>.jar`
+- `supracraft-bridge-plugin-<version>.jar`
+- `supracraft-bridge-sbom-<version>.json`
+- `BUILD-METADATA.properties`
+- `SHA256SUMS`
 
-Maven repository filenames remain derived from Maven coordinates as required by normal repository layout.
+Maven repository filenames remain the normal artifactId/version filenames required by Maven layout. The `supracraft-*` names are the human-facing standalone files downloaded from Actions or releases; they are byte-identical copies of the corresponding Maven-built module JARs.
 
 ## Version policy
 
