@@ -38,6 +38,8 @@ permissions:
 
 env:
   BRIDGE_OWNER: ${{ github.repository_owner }}
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  SOURCE_REF: ${{ github.head_ref || github.ref }}
 
 jobs:
   build:
@@ -80,8 +82,8 @@ jobs:
       - name: Build, test, and generate SBOM
         run: >-
           mvn -B verify
-          -Dbuild.commit=${GITHUB_SHA}
-          -Dbuild.ref=${GITHUB_REF}
+          -Dbuild.commit=${SOURCE_SHA}
+          -Dbuild.ref=${SOURCE_REF}
           -Dbuild.number=${GITHUB_RUN_NUMBER}
 
       - name: Generate checksums
@@ -142,8 +144,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >-
           mvn -B -DskipTests
-          -Dbuild.commit=${GITHUB_SHA}
-          -Dbuild.ref=${GITHUB_REF}
+          -Dbuild.commit=${SOURCE_SHA}
+          -Dbuild.ref=${SOURCE_REF}
           -Dbuild.number=${GITHUB_RUN_NUMBER}
           -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/${BRIDGE_OWNER}/Bridge
           deploy
@@ -154,8 +156,8 @@ jobs:
           rm -rf docs/maven
           mkdir -p docs/maven
           mvn -B -DskipTests \
-            -Dbuild.commit=${GITHUB_SHA} \
-            -Dbuild.ref=${GITHUB_REF} \
+            -Dbuild.commit=${SOURCE_SHA} \
+            -Dbuild.ref=${SOURCE_REF} \
             -Dbuild.number=${GITHUB_RUN_NUMBER} \
             -DaltDeploymentRepository=pages::default::file://${{ github.workspace }}/docs/maven deploy
 
