@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>net.ME1312.ASM</groupId>
+        <groupId>io.github.supracraft.bridge</groupId>
         <artifactId>bridge-parent</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.1.0-dev</version>
     </parent>
 
     <artifactId>bridge-mc-it</artifactId>
@@ -20,7 +20,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>net.ME1312.ASM</groupId>
+            <groupId>io.github.supracraft.bridge</groupId>
             <artifactId>bridge</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -61,7 +61,7 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>net.ME1312.ASM</groupId>
+                <groupId>io.github.supracraft.bridge</groupId>
                 <artifactId>bridge-plugin</artifactId>
                 <version>${project.version}</version>
                 <executions>

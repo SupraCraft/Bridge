@@ -2,10 +2,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>net.ME1312.ASM</groupId>
+    <groupId>io.github.supracraft.bridge</groupId>
     <artifactId>bridge-parent</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0-dev</version>
     <packaging>pom</packaging>
+    <name>SupraCraft Bridge</name>
+    <description>SupraCraft-maintained fork of ME1312/Bridge</description>
+    <url>https://github.com/SupraCraft/Bridge</url>
 
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
@@ -16,6 +19,8 @@
         <build.commit>unknown</build.commit>
         <build.ref>unknown</build.ref>
         <build.number>local</build.number>
+        <source.repository>SupraCraft/Bridge</source.repository>
+        <upstream.repository>ME1312/Bridge</upstream.repository>
     </properties>
 
     <modules>
@@ -54,6 +59,8 @@
                             <Build-Commit>${build.commit}</Build-Commit>
                             <Build-Ref>${build.ref}</Build-Ref>
                             <Build-Number>${build.number}</Build-Number>
+                            <Source-Repository>${source.repository}</Source-Repository>
+                            <Upstream-Repository>${upstream.repository}</Upstream-Repository>
                         </manifestEntries>
                     </archive>
                 </configuration>
