@@ -50,6 +50,8 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.VALUE }}
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
@@ -126,6 +128,24 @@ jobs:
           grep -Fx 'Source-Repository: SupraCraft/Bridge' /tmp/bridge-manifest.mf
           grep -Fx 'Upstream-Repository: ME1312/Bridge' /tmp/bridge-manifest.mf
 
+      - name: Verify tested-artifact promotion locally
+        run: |
+          rm -rf /tmp/bridge-maven-repo
+          mkdir -p /tmp/bridge-maven-repo
+          bash ./scripts/deploy-tested-artifacts.sh \
+            '${{ steps.version.outputs.VALUE }}' \
+            local \
+            'file:///tmp/bridge-maven-repo'
+          base='/tmp/bridge-maven-repo/io/github/supracraft/bridge'
+          version='${{ steps.version.outputs.VALUE }}'
+          test -s "$base/bridge-parent/$version/bridge-parent-$version.pom"
+          for artifact in bridge bridge-asm bridge-plugin bridge-test; do
+            published="$base/$artifact/$version/$artifact-$version.jar"
+            built="build/$artifact/$artifact-$version.jar"
+            test -s "$published"
+            cmp "$built" "$published"
+          done
+
       - name: Stage standalone artifacts
         run: bash ./scripts/stage-standalone-artifacts.sh '${{ steps.version.outputs.VALUE }}'
 
@@ -157,6 +177,24 @@ jobs:
             SHA256SUMS
           if-no-files-found: error
 
+      - name: Upload tested Maven publication inputs
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: bridge-maven-publication-${{ steps.version.outputs.VALUE }}
+          path: |
+            pom.xml
+            bridge-asm/pom.xml
+            bridge-plugin/pom.xml
+            bridge/pom.xml
+            bridge-test/pom.xml
+            build/bridge-asm/bridge-asm-${{ steps.version.outputs.VALUE }}.jar
+            build/bridge-plugin/bridge-plugin-${{ steps.version.outputs.VALUE }}.jar
+            build/bridge/bridge-${{ steps.version.outputs.VALUE }}.jar
+            build/bridge-test/bridge-test-${{ steps.version.outputs.VALUE }}.jar
+          if-no-files-found: error
+          retention-days: 1
+
   publish:
     if: github.event_name != 'pull_request'
     needs: build
@@ -183,87 +221,55 @@ jobs:
           ./mvnw --version | tee /tmp/maven-version.txt
           grep -F 'Apache Maven 3.9.16' /tmp/maven-version.txt
 
-      - name: Derive version
-        id: version
-        env:
-          RELEASE_TAG: ${{ github.event.inputs.release_tag || '' }}
+      - name: Download tested Maven publication inputs
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: bridge-maven-publication-${{ needs.build.outputs.version }}
+          path: .
+
+      - name: Download tested build evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: supracraft-bridge-${{ needs.build.outputs.version }}
+          path: tested-evidence
+
+      - name: Verify promoted version
         run: |
-          if [[ -n "${RELEASE_TAG}" ]]; then
-            VER="${RELEASE_TAG#v}"
-          elif [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-            VER="${GITHUB_REF_NAME#v}"
-          else
-            SOURCE_VERSION="$(python3 - <<'PY'
-          import xml.etree.ElementTree as ET
-          root = ET.parse('pom.xml').getroot()
-          ns = {'m': 'http://maven.apache.org/POM/4.0.0'}
-          print(root.find('m:version', ns).text.strip())
-          PY
-          )"
-            case "${SOURCE_VERSION}" in
-              *-dev) VER="${SOURCE_VERSION}.${GITHUB_RUN_NUMBER}" ;;
-              *) echo "Non-release source version must end in -dev; got ${SOURCE_VERSION}" >&2; exit 1 ;;
-            esac
-          fi
-          echo "VALUE=$VER" >> "$GITHUB_OUTPUT"
+          test "$(./mvnw -q -DforceStdout help:evaluate -Dexpression=project.version)" = '${{ needs.build.outputs.version }}'
+          version='${{ needs.build.outputs.version }}'
+          for artifact in bridge bridge-asm bridge-plugin bridge-test; do
+            test -s "build/$artifact/$artifact-$version.jar"
+          done
 
-      - name: Set project version
-        run: ./mvnw -B -q org.codehaus.mojo:versions-maven-plugin:2.21.0:set -DnewVersion=${{ steps.version.outputs.VALUE }} -DgenerateBackupPoms=false
-
-      - name: Publish exact version to GitHub Packages
+      - name: Publish tested artifacts to GitHub Packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >-
-          ./mvnw -B -DskipTests
-          -Dbuild.commit=${SOURCE_SHA}
-          -Dbuild.ref=${SOURCE_REF}
-          -Dbuild.number=${GITHUB_RUN_NUMBER}
-          -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/${BRIDGE_OWNER}/Bridge
-          deploy
+          bash ./scripts/deploy-tested-artifacts.sh
+          '${{ needs.build.outputs.version }}'
+          github
+          "https://maven.pkg.github.com/${BRIDGE_OWNER}/Bridge"
 
-      - name: Build static Maven repo for Pages
+      - name: Build static Maven repo from tested artifacts
         if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
         run: |
           rm -rf docs/maven
           mkdir -p docs/maven
-          ./mvnw -B -DskipTests \
-            -Dbuild.commit=${SOURCE_SHA} \
-            -Dbuild.ref=${SOURCE_REF} \
-            -Dbuild.number=${GITHUB_RUN_NUMBER} \
-            -DaltDeploymentRepository=pages::default::file://${{ github.workspace }}/docs/maven deploy
+          bash ./scripts/deploy-tested-artifacts.sh \
+            '${{ needs.build.outputs.version }}' \
+            pages \
+            "file://${{ github.workspace }}/docs/maven"
 
-      - name: Stage standalone release artifacts
-        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
-        run: bash ./scripts/stage-standalone-artifacts.sh '${{ steps.version.outputs.VALUE }}'
-
-      - name: Record release metadata
-        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
-        run: |
-          cat > BUILD-METADATA.properties <<EOF
-          group=io.github.supracraft.bridge
-          version=${{ steps.version.outputs.VALUE }}
-          source.repository=SupraCraft/Bridge
-          upstream.repository=ME1312/Bridge
-          git.commit=${SOURCE_SHA}
-          git.ref=${SOURCE_REF}
-          github.run=${GITHUB_RUN_NUMBER}
-          maven.version=3.9.16
-          maven.wrapper.version=3.3.4
-          EOF
-
-      - name: Generate release checksums
-        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
-        run: sha256sum dist/* BUILD-METADATA.properties > SHA256SUMS
-
-      - name: Attach SupraCraft provenance assets to release
+      - name: Attach tested SupraCraft provenance assets to release
         if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
         uses: softprops/action-gh-release@7c4723f7a335432393329f8f1c564994ce50185d
         with:
           tag_name: ${{ inputs.release_tag || github.ref_name }}
           files: |
-            dist/*
-            BUILD-METADATA.properties
-            SHA256SUMS
+            tested-evidence/dist/*
+            tested-evidence/BUILD-METADATA.properties
+            tested-evidence/REPRODUCIBILITY.properties
+            tested-evidence/SHA256SUMS
           fail_on_unmatched_files: true
 
       - name: Upload Pages artifact
