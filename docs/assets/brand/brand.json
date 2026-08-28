@@ -1,8 +1,15 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "project": "Bridge",
   "identity": "Java bytecode tooling",
   "metaphor": "a bridge crossing from compiled Java input to transformed bytecode output",
+  "organization_brand": {
+    "name": "SupraCraft",
+    "contract_version": "0.1.0-candidate",
+    "profile_snapshot": "BRAND_PROFILE.json",
+    "governance_source": "SupraCraft/brand-governance-private:profiles/projects/Bridge.json",
+    "runtime_dependency_on_private_repo": false
+  },
   "assets": {
     "icon": "assets/brand/icon.svg",
     "hero": "assets/brand/hero.svg",
