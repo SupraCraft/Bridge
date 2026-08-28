@@ -2,10 +2,57 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Bridge Maven Repository</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SupraCraft Bridge — Java bytecode transformation toolkit</title>
+  <meta name="description" content="SupraCraft-maintained Bridge fork: post-compile Maven plugin and bytecode library for advanced Java language features.">
+  <link rel="canonical" href="https://supracraft.github.io/Bridge/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="SupraCraft Bridge">
+  <meta property="og:description" content="Post-compile Maven transformations and bytecode support for advanced Java language features.">
+  <meta property="og:url" content="https://supracraft.github.io/Bridge/">
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; line-height: 1.55; }
+    main { max-width: 900px; margin: 0 auto; padding: 3rem 1.25rem 4rem; }
+    h1 { font-size: clamp(2.2rem, 6vw, 4rem); line-height: 1.05; margin-bottom: .75rem; }
+    h2 { margin-top: 2.25rem; }
+    .lede { font-size: 1.2rem; max-width: 760px; }
+    .notice, .card { border: 1px solid color-mix(in srgb, currentColor 20%, transparent); border-radius: .8rem; padding: 1rem 1.1rem; }
+    .notice { margin: 1.5rem 0; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; }
+    a { color: inherit; }
+    .button { display: inline-block; margin: .35rem .45rem .35rem 0; padding: .55rem .8rem; border: 1px solid currentColor; border-radius: .55rem; text-decoration: none; }
+    code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+  </style>
 </head>
 <body>
-  <h1>Bridge Maven Repository</h1>
-  <p>Release builds publish the static Maven repository under <code>/maven/</code>.</p>
+<main>
+  <h1>Bridge</h1>
+  <p class="lede">A post-compile Maven plugin and supporting bytecode library that adds bytecode-level language features using existing Java semantics.</p>
+
+  <div class="notice">
+    <strong>SupraCraft-maintained fork.</strong> This repository is derived from <a href="https://github.com/ME1312/Bridge">ME1312/Bridge</a>. Upstream authorship and license history are preserved; new SupraCraft artifacts use SupraCraft-owned coordinates and provenance.
+  </div>
+
+  <p>
+    <a class="button" href="https://github.com/SupraCraft/Bridge">Source</a>
+    <a class="button" href="https://github.com/SupraCraft/Bridge/releases">Releases</a>
+    <a class="button" href="https://github.com/SupraCraft/Bridge/blob/master/docs/artifact-consumption.md">Artifact consumption</a>
+    <a class="button" href="maven/">Release Maven mirror</a>
+  </p>
+
+  <h2>Canonical artifacts</h2>
+  <div class="grid">
+    <div class="card"><strong>Maven group</strong><br><code>io.github.supracraft.bridge</code></div>
+    <div class="card"><strong>Development versions</strong><br><code>X.Y.Z-dev.N</code> immutable CI publications</div>
+    <div class="card"><strong>Stable releases</strong><br><code>X.Y.Z</code> tagged as <code>vX.Y.Z</code></div>
+  </div>
+
+  <h2>Where to consume Bridge</h2>
+  <p>GitHub Packages is the canonical repository for current immutable Bridge publications. It requires authentication. Release workflows may also publish an anonymous static Maven mirror under <code>/Bridge/maven/</code>; that mirror contains release material, not the rolling development package set.</p>
+
+  <h2>Project contract</h2>
+  <p>Builds use the Maven Wrapper, emit Java 21 bytecode, generate SBOM/provenance evidence, and publish the exact bytes already built and tested. See the <a href="https://github.com/SupraCraft/Bridge/blob/master/PROJECT_CONTRACT.json">machine-readable project contract</a> and <a href="https://github.com/SupraCraft/Bridge/blob/master/README.md">README</a> for the current operational details.</p>
+</main>
 </body>
 </html>
