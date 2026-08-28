@@ -176,6 +176,7 @@ jobs:
             REPRODUCIBILITY.properties
             SHA256SUMS
           if-no-files-found: error
+          retention-days: 14
 
       - name: Upload tested Maven publication inputs
         if: github.event_name != 'pull_request'
