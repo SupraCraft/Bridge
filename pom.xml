@@ -10,7 +10,12 @@
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
         <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+        <maven.jar.plugin.version>3.4.2</maven.jar.plugin.version>
+        <cyclonedx.maven.plugin.version>2.9.3</cyclonedx.maven.plugin.version>
         <bridge.version>${project.version}</bridge.version>
+        <build.commit>unknown</build.commit>
+        <build.ref>unknown</build.ref>
+        <build.number>local</build.number>
     </properties>
 
     <modules>
@@ -33,4 +38,46 @@
             </modules>
         </profile>
     </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven.jar.plugin.version}</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Implementation-Title>${project.artifactId}</Implementation-Title>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                            <Implementation-Vendor>SupraCraft</Implementation-Vendor>
+                            <Build-Commit>${build.commit}</Build-Commit>
+                            <Build-Ref>${build.ref}</Build-Ref>
+                            <Build-Number>${build.number}</Build-Number>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.cyclonedx</groupId>
+                <artifactId>cyclonedx-maven-plugin</artifactId>
+                <version>${cyclonedx.maven.plugin.version}</version>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>make-aggregate-sbom</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>makeAggregateBom</goal>
+                        </goals>
+                        <configuration>
+                            <outputFormat>json</outputFormat>
+                            <outputName>bridge-sbom</outputName>
+                            <includeBomSerialNumber>true</includeBomSerialNumber>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

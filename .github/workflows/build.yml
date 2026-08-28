@@ -10,6 +10,16 @@ on:
       - 'bridge*/**'
       - 'docs/**'
       - '.github/workflows/build.yml'
+      - 'VERSIONING.md'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - 'bridge*/**'
+      - 'docs/**'
+      - '.github/workflows/build.yml'
+      - 'VERSIONING.md'
   release:
     types: [published]
   workflow_dispatch:
@@ -23,26 +33,94 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write
-  packages: write
-  pages: write
-  id-token: write
+  contents: read
+  packages: read
+
+env:
+  BRIDGE_OWNER: ${{ github.repository_owner }}
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  SOURCE_REF: ${{ github.head_ref || github.ref }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      BRIDGE_OWNER: ${{ github.repository_owner }}
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
 
       - name: Verify no placeholder versions
         run: |
-          if rg --fixed-strings -- '-PLACEHOLDER' pom.xml bridge*/pom.xml; then
+          if grep -F -- '-PLACEHOLDER' pom.xml bridge*/pom.xml; then
             echo "Found placeholder versions. Please replace -PLACEHOLDER before building."
             exit 1
           fi
+
+      - name: Set up JDK
+        uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Derive version
+        id: version
+        env:
+          RELEASE_TAG: ${{ github.event.inputs.release_tag || '' }}
+        run: |
+          if [[ -n "${RELEASE_TAG}" ]]; then
+            VER="${RELEASE_TAG#v}"
+          elif [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VER="${GITHUB_REF_NAME#v}"
+          else
+            SOURCE_VERSION="$(python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          root = ET.parse('pom.xml').getroot()
+          ns = {'m': 'http://maven.apache.org/POM/4.0.0'}
+          print(root.find('m:version', ns).text.strip())
+          PY
+          )"
+            BASE_VERSION="${SOURCE_VERSION%%-SNAPSHOT*}"
+            VER="${BASE_VERSION}-SNAPSHOT.${GITHUB_RUN_NUMBER}"
+          fi
+          echo "VALUE=$VER" >> "$GITHUB_OUTPUT"
+
+      - name: Set project version
+        run: mvn -B -q versions:set -DnewVersion=${{ steps.version.outputs.VALUE }} -DgenerateBackupPoms=false
+
+      - name: Build, test, and generate SBOM
+        run: >-
+          mvn -B verify
+          -Dbuild.commit=${SOURCE_SHA}
+          -Dbuild.ref=${SOURCE_REF}
+          -Dbuild.number=${GITHUB_RUN_NUMBER}
+
+      - name: Generate checksums
+        run: |
+          find build -type f -name 'bridge-*.jar' -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS
+          sha256sum target/bridge-sbom.json >> SHA256SUMS
+
+      - name: Upload build evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: bridge-build-${{ steps.version.outputs.VALUE }}
+          path: |
+            build/**/bridge-*.jar
+            target/bridge-sbom.json
+            SHA256SUMS
+          if-no-files-found: error
+
+  publish:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      pages: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
 
       - name: Set up JDK
         uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287
@@ -62,21 +140,29 @@ jobs:
           elif [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
             VER="${GITHUB_REF_NAME#v}"
           else
-            VER="0.1.0-SNAPSHOT.${GITHUB_RUN_NUMBER}"
+            SOURCE_VERSION="$(python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          root = ET.parse('pom.xml').getroot()
+          ns = {'m': 'http://maven.apache.org/POM/4.0.0'}
+          print(root.find('m:version', ns).text.strip())
+          PY
+          )"
+            BASE_VERSION="${SOURCE_VERSION%%-SNAPSHOT*}"
+            VER="${BASE_VERSION}-SNAPSHOT.${GITHUB_RUN_NUMBER}"
           fi
           echo "VALUE=$VER" >> "$GITHUB_OUTPUT"
 
       - name: Set project version
         run: mvn -B -q versions:set -DnewVersion=${{ steps.version.outputs.VALUE }} -DgenerateBackupPoms=false
 
-      - name: Build & test
-        run: mvn -B verify
-
-      - name: Publish to GitHub Packages
+      - name: Publish exact version to GitHub Packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: >
+        run: >-
           mvn -B -DskipTests
+          -Dbuild.commit=${SOURCE_SHA}
+          -Dbuild.ref=${SOURCE_REF}
+          -Dbuild.number=${GITHUB_RUN_NUMBER}
           -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/${BRIDGE_OWNER}/Bridge
           deploy
 
@@ -85,30 +171,28 @@ jobs:
         run: |
           rm -rf docs/maven
           mkdir -p docs/maven
-          mvn -B -DskipTests -DaltDeploymentRepository=pages::default::file://${{ github.workspace }}/docs/maven deploy
+          mvn -B -DskipTests \
+            -Dbuild.commit=${SOURCE_SHA} \
+            -Dbuild.ref=${SOURCE_REF} \
+            -Dbuild.number=${GITHUB_RUN_NUMBER} \
+            -DaltDeploymentRepository=pages::default::file://${{ github.workspace }}/docs/maven deploy
 
-      - name: Upload built artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: maven-repo
-          path: |
-            build/**/bridge-*.jar
-            bridge/target
-            bridge-asm/target
-            bridge-plugin/target
-            bridge-test/target
+      - name: Generate release checksums
+        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
+        run: |
+          find build -type f -name 'bridge-*.jar' -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS
+          sha256sum target/bridge-sbom.json >> SHA256SUMS
 
-      - name: Attach JARs to release
+      - name: Attach provenance assets to release
         if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
         uses: softprops/action-gh-release@7c4723f7a335432393329f8f1c564994ce50185d
         with:
           tag_name: ${{ inputs.release_tag || github.ref_name }}
           files: |
             build/**/bridge-*.jar
-            bridge/target/*.jar
-            bridge-asm/target/*.jar
-            bridge-plugin/target/*.jar
-            bridge-test/target/*.jar
+            target/bridge-sbom.json
+            SHA256SUMS
+          fail_on_unmatched_files: true
 
       - name: Upload Pages artifact
         if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
@@ -118,7 +202,7 @@ jobs:
 
   deploy-pages:
     if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
-    needs: build
+    needs: publish
     runs-on: ubuntu-latest
     permissions:
       pages: write
