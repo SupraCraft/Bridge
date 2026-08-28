@@ -1,17 +1,41 @@
 ---
 name: Bug Report
-about: Report an issue with Bridge ASM
+about: Report a reproducible Bridge problem
 
 ---
 
-### Platform Information
-Paste in the version information from the Bridge module in question here. You can get this info from any relevant build log or your `pom.xml`.
+## Summary
 
-### What Happened
-Here you can write about what happened that shouldn't have. If you have any errors in your console related to what happened, you should also paste those here.
+Describe what happened and what you expected instead.
 
-### How It Happened
-Tell us step-by-step how to recreate the problem. This step is vital for us to determine whether the problem happens to everyone else too.
+## Environment
 
-### Additional Information
-Here you can provide any extra details you may think useful for solving the problem.
+Provide exact versions rather than “latest”:
+
+- Bridge version:
+- affected module(s):
+- Java version:
+- Maven version / confirm repository wrapper was used:
+- operating system/container:
+- consuming project/version, if applicable:
+- ASM version or Minecraft mapped-server fixture, if relevant:
+
+## Reproduction
+
+List the smallest reliable sequence of steps or minimal project/code needed to reproduce the problem.
+
+## Evidence
+
+Include relevant compiler/Maven/plugin errors, stack traces, transformed bytecode diagnostics, or artifact metadata. Remove tokens, private repository URLs, or other sensitive information.
+
+## Compatibility scope
+
+State whether the issue reproduces on another Bridge version, Java version, or consumer when that information helps isolate the defect. Do not build a broad matrix unless necessary.
+
+## Artifact/publication impact
+
+If the problem concerns a published artifact, include the exact Maven coordinate and whether the issue is content, provenance, reproducibility, or repository-resolution related.
+
+## Additional context
+
+Include related issues/PRs or upstream behavior that materially helps diagnosis.
