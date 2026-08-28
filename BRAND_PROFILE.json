@@ -1,12 +1,12 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "organization_brand": "SupraCraft",
   "brand_contract_version": "0.1.0-candidate",
   "governance_source": "SupraCraft/brand-governance-private:profiles/projects/Bridge.json",
   "repository": "SupraCraft/Bridge",
   "project": "Bridge",
   "families": ["developer-tooling", "upstream-sensitive-fork"],
-  "status": "candidate",
+  "status": "adopted",
   "snapshot_policy": "vendored-reviewed-snapshot-no-private-runtime-dependency",
   "identity": {
     "metaphor": "modern bridge carrying program structure across a bytecode transformation boundary",
@@ -22,5 +22,13 @@
   "packaged_resources": {
     "bridge_jar_icon": "META-INF/supracraft/bridge/icon.svg",
     "source_path": "bridge/resources/META-INF/supracraft/bridge/icon.svg"
+  },
+  "verification": {
+    "pilot_pr": 24,
+    "pilot_merge_commit": "6f734ca3ae6dd8f8daad5554692ed42de449b0d3",
+    "project_ci": "passed",
+    "pages_deployment": "passed",
+    "pages_url": "https://supracraft.github.io/Bridge/",
+    "repository_admin_metadata": "pending-canonical-apply"
   }
 }
