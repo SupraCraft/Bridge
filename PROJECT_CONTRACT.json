@@ -43,6 +43,12 @@
     "event_catalog": "docs/diagnostics.md",
     "authoritative_failure_signal": "maven-process-exit-code"
   },
+  "retention": {
+    "actions_build_evidence_days": 14,
+    "actions_publication_handoff_days": 1,
+    "release_assets": "durable-historical-provenance",
+    "maven_dev_package_cleanup": "reference-gated-and-deferred-until-stable-release-line"
+  },
   "provenance": {
     "source_repository": "SupraCraft/Bridge",
     "upstream_repository": "ME1312/Bridge",
@@ -57,6 +63,7 @@
     "artifact_identity": "ARTIFACT_IDENTITY.md",
     "versioning": "VERSIONING.md",
     "artifact_consumption": "docs/artifact-consumption.md",
-    "diagnostics": "docs/diagnostics.md"
+    "diagnostics": "docs/diagnostics.md",
+    "artifact_retention": "docs/artifact-retention.md"
   }
 }
