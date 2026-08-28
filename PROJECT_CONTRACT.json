@@ -37,6 +37,12 @@
     "documentation_contract": "scripts/check-documentation-contract.sh",
     "publication_model": "build-once-promote-tested-bytes"
   },
+  "diagnostics": {
+    "transport": "maven-log",
+    "stable_event_ids": true,
+    "event_catalog": "docs/diagnostics.md",
+    "authoritative_failure_signal": "maven-process-exit-code"
+  },
   "provenance": {
     "source_repository": "SupraCraft/Bridge",
     "upstream_repository": "ME1312/Bridge",
@@ -50,6 +56,7 @@
     "policy": "docs/DOCUMENTATION_POLICY.md",
     "artifact_identity": "ARTIFACT_IDENTITY.md",
     "versioning": "VERSIONING.md",
-    "artifact_consumption": "docs/artifact-consumption.md"
+    "artifact_consumption": "docs/artifact-consumption.md",
+    "diagnostics": "docs/diagnostics.md"
   }
 }
