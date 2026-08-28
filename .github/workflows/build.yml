@@ -109,6 +109,14 @@ jobs:
           -Dbuild.ref=${SOURCE_REF}
           -Dbuild.number=${GITHUB_RUN_NUMBER}
 
+      - name: Prove reproducible published JARs
+        run: >-
+          bash ./scripts/verify-reproducible-build.sh
+          '${{ steps.version.outputs.VALUE }}'
+          '${SOURCE_SHA}'
+          '${SOURCE_REF}'
+          '${GITHUB_RUN_NUMBER}'
+
       - name: Verify produced coordinates and provenance
         run: |
           test "$(./mvnw -q -DforceStdout help:evaluate -Dexpression=project.groupId)" = 'io.github.supracraft.bridge'
@@ -136,7 +144,7 @@ jobs:
           EOF
 
       - name: Generate checksums
-        run: sha256sum dist/* BUILD-METADATA.properties > SHA256SUMS
+        run: sha256sum dist/* BUILD-METADATA.properties REPRODUCIBILITY.properties > SHA256SUMS
 
       - name: Upload build evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -145,6 +153,7 @@ jobs:
           path: |
             dist/*
             BUILD-METADATA.properties
+            REPRODUCIBILITY.properties
             SHA256SUMS
           if-no-files-found: error
 
