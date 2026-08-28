@@ -12,10 +12,14 @@ on:
       - 'ARTIFACT_IDENTITY.md'
       - 'docs/**'
       - 'scripts/check-documentation-contract.sh'
+      - 'scripts/build-public-site.py'
       - '.github/PULL_REQUEST_TEMPLATE.md'
       - '.github/ISSUE_TEMPLATE/**'
       - '.github/workflows/documentation.yml'
+      - '.github/workflows/pages.yml'
       - 'pom.xml'
+      - 'bridge/pom.xml'
+      - 'bridge/resources/**'
       - '.mvn/wrapper/**'
   pull_request:
     branches: [master, main]
@@ -28,10 +32,14 @@ on:
       - 'ARTIFACT_IDENTITY.md'
       - 'docs/**'
       - 'scripts/check-documentation-contract.sh'
+      - 'scripts/build-public-site.py'
       - '.github/PULL_REQUEST_TEMPLATE.md'
       - '.github/ISSUE_TEMPLATE/**'
       - '.github/workflows/documentation.yml'
+      - '.github/workflows/pages.yml'
       - 'pom.xml'
+      - 'bridge/pom.xml'
+      - 'bridge/resources/**'
       - '.mvn/wrapper/**'
 
 permissions:
@@ -43,5 +51,5 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
-      - name: Validate documentation contract
+      - name: Validate documentation and public surface
         run: bash ./scripts/check-documentation-contract.sh
