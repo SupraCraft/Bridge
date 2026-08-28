@@ -4,11 +4,11 @@ Bridge uses independent semantic versioning. VanillaCord and other consumers mus
 
 ## Source version
 
-The checked-in parent POM carries the next development line as `X.Y.Z-SNAPSHOT`. Module versions inherit it. Do not encode GitHub Actions run numbers or commit hashes in the repository POM.
+The checked-in parent POM is the single source of truth for the next development line and carries `X.Y.Z-SNAPSHOT`. Module versions inherit it. Do not encode GitHub Actions run numbers or commit hashes in the repository POM, and do not duplicate the numeric base version in workflow code.
 
 ## CI versions
 
-Ordinary non-tagged CI builds rewrite the effective Maven version to `0.1.0-SNAPSHOT.<run-number>`. That coordinate is unique within this repository and is suitable for integration testing. The artifact manifest records the full Git commit, ref, and run number, so the Maven coordinate is not expected to carry source provenance by itself.
+Ordinary non-tagged CI reads the source POM version, strips its `-SNAPSHOT` suffix, and rewrites the effective Maven version to `X.Y.Z-SNAPSHOT.<run-number>`. That coordinate is unique within this repository and is suitable for integration testing. The artifact manifest records the full source Git commit, ref, and run number, so the Maven coordinate is not expected to carry source provenance by itself.
 
 ## Release versions
 
@@ -29,7 +29,7 @@ Every Bridge JAR built through Maven contains:
 
 CI additionally emits a CycloneDX aggregate SBOM (`bridge-sbom.json`) and `SHA256SUMS`. Release builds attach those provenance assets beside the JARs.
 
-Build timestamps are intentionally not added to the manifest. Version, source commit, ref, and CI run identify the build without introducing avoidable timestamp variance.
+Build timestamps are intentionally not added to the JAR manifest. Version, source commit, ref, and CI run identify the build without introducing avoidable manifest timestamp variance.
 
 ## Compatibility policy
 
