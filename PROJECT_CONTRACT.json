@@ -34,6 +34,7 @@
     "reproducibility": "scripts/verify-reproducible-build.sh",
     "deploy_tested_artifacts": "scripts/deploy-tested-artifacts.sh",
     "stage_standalone_artifacts": "scripts/stage-standalone-artifacts.sh",
+    "documentation_contract": "scripts/check-documentation-contract.sh",
     "publication_model": "build-once-promote-tested-bytes"
   },
   "provenance": {
@@ -46,6 +47,7 @@
   "documentation": {
     "human_entrypoint": "README.md",
     "agent_instructions": "AGENTS.md",
+    "policy": "docs/DOCUMENTATION_POLICY.md",
     "artifact_identity": "ARTIFACT_IDENTITY.md",
     "versioning": "VERSIONING.md",
     "artifact_consumption": "docs/artifact-consumption.md"
