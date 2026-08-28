@@ -17,9 +17,9 @@
   "pages": {
     "expected_enabled": true,
     "url": "https://supracraft.github.io/Bridge/",
-    "source": "github-actions",
-    "content_root": "docs/",
-    "release_maven_mirror": "maven/"
+    "source": "branch",
+    "branch": "master",
+    "content_root": "docs/"
   },
   "upstream_repository": "ME1312/Bridge"
 }

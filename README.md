@@ -179,4 +179,4 @@ Build-Ref: <git-ref>
 Build-Number: <run-number>
 ```
 
-CI also retains SBOM, checksums, build metadata, and reproducibility evidence. Release/tag paths attach the already-tested standalone assets and construct the static Maven repository from the tested inputs.
+CI also retains SBOM, checksums, build metadata, and reproducibility evidence. Release/tag paths attach the already-tested standalone assets. GitHub Packages is the canonical Maven publication channel; GitHub Pages is the public documentation surface.

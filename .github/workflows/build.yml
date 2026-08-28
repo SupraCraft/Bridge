@@ -203,8 +203,6 @@ jobs:
     permissions:
       contents: write
       packages: write
-      pages: write
-      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
@@ -251,16 +249,6 @@ jobs:
           github
           "https://maven.pkg.github.com/${BRIDGE_OWNER}/Bridge"
 
-      - name: Build static Maven repo from tested artifacts
-        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
-        run: |
-          rm -rf docs/maven
-          mkdir -p docs/maven
-          bash ./scripts/deploy-tested-artifacts.sh \
-            '${{ needs.build.outputs.version }}' \
-            pages \
-            "file://${{ github.workspace }}/docs/maven"
-
       - name: Attach tested SupraCraft provenance assets to release
         if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
         uses: softprops/action-gh-release@7c4723f7a335432393329f8f1c564994ce50185d
@@ -272,27 +260,3 @@ jobs:
             tested-evidence/REPRODUCIBILITY.properties
             tested-evidence/SHA256SUMS
           fail_on_unmatched_files: true
-
-      - name: Upload Pages artifact
-        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
-        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9
-        with:
-          path: docs
-
-  deploy-pages:
-    if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
-    needs: publish
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    concurrency:
-      group: pages
-      cancel-in-progress: true
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128

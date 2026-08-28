@@ -38,13 +38,15 @@ assert contract['public_surface']['pages_url'] == metadata['homepage'] == metada
 assert metadata['repository'] == contract['repository']
 assert metadata['upstream_repository'] == contract['upstream_repository']
 assert metadata['pages']['expected_enabled'] is True
-assert metadata['pages']['source'] == 'github-actions'
+assert metadata['pages']['source'] == 'branch'
+assert metadata['pages']['branch'] == 'master'
 assert metadata['pages']['content_root'] == 'docs/'
 assert metadata['topics'] == sorted(set(metadata['topics']))
 assert 'ME1312/Bridge' in page
 assert 'io.github.supracraft.bridge' in page
 assert metadata['homepage'] in page
 assert metadata['description'] in page
+assert 'documentation, not a second Maven publication channel' in page
 
 root = ET.parse('pom.xml').getroot()
 ns = {'m': 'http://maven.apache.org/POM/4.0.0'}
