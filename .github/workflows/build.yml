@@ -11,6 +11,7 @@ on:
       - 'docs/**'
       - '.github/workflows/build.yml'
       - 'VERSIONING.md'
+      - 'ARTIFACT_IDENTITY.md'
   pull_request:
     branches: [main, master]
     paths:
@@ -20,6 +21,7 @@ on:
       - 'docs/**'
       - '.github/workflows/build.yml'
       - 'VERSIONING.md'
+      - 'ARTIFACT_IDENTITY.md'
   release:
     types: [published]
   workflow_dispatch:
@@ -48,12 +50,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
 
-      - name: Verify no placeholder versions
+      - name: Verify artifact identity
         run: |
-          if grep -F -- '-PLACEHOLDER' pom.xml bridge*/pom.xml; then
-            echo "Found placeholder versions. Please replace -PLACEHOLDER before building."
+          if grep -R -F --include='pom.xml' 'net.ME1312.ASM' .; then
+            echo "Legacy upstream Maven coordinates remain in active POMs."
             exit 1
           fi
+          grep -F '<groupId>io.github.supracraft.bridge</groupId>' pom.xml
+          grep -F '<version>0.1.0-dev</version>' pom.xml
 
       - name: Set up JDK
         uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287
@@ -79,8 +83,10 @@ jobs:
           print(root.find('m:version', ns).text.strip())
           PY
           )"
-            BASE_VERSION="${SOURCE_VERSION%%-SNAPSHOT*}"
-            VER="${BASE_VERSION}-SNAPSHOT.${GITHUB_RUN_NUMBER}"
+            case "${SOURCE_VERSION}" in
+              *-dev) VER="${SOURCE_VERSION}.${GITHUB_RUN_NUMBER}" ;;
+              *) echo "Non-release source version must end in -dev; got ${SOURCE_VERSION}" >&2; exit 1 ;;
+            esac
           fi
           echo "VALUE=$VER" >> "$GITHUB_OUTPUT"
 
@@ -94,18 +100,40 @@ jobs:
           -Dbuild.ref=${SOURCE_REF}
           -Dbuild.number=${GITHUB_RUN_NUMBER}
 
+      - name: Verify produced coordinates and provenance
+        run: |
+          test "$(mvn -q -DforceStdout help:evaluate -Dexpression=project.groupId)" = 'io.github.supracraft.bridge'
+          test "$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)" = '${{ steps.version.outputs.VALUE }}'
+          unzip -p build/bridge/bridge-${{ steps.version.outputs.VALUE }}.jar META-INF/MANIFEST.MF | tr -d '\r' > /tmp/bridge-manifest.mf
+          grep -Fx 'Implementation-Vendor: SupraCraft' /tmp/bridge-manifest.mf
+          grep -Fx 'Source-Repository: SupraCraft/Bridge' /tmp/bridge-manifest.mf
+          grep -Fx 'Upstream-Repository: ME1312/Bridge' /tmp/bridge-manifest.mf
+
       - name: Generate checksums
         run: |
           find build -type f -name 'bridge-*.jar' -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS
           sha256sum target/bridge-sbom.json >> SHA256SUMS
 
+      - name: Record build metadata
+        run: |
+          cat > BUILD-METADATA.properties <<EOF
+          group=io.github.supracraft.bridge
+          version=${{ steps.version.outputs.VALUE }}
+          source.repository=SupraCraft/Bridge
+          upstream.repository=ME1312/Bridge
+          git.commit=${SOURCE_SHA}
+          git.ref=${SOURCE_REF}
+          github.run=${GITHUB_RUN_NUMBER}
+          EOF
+
       - name: Upload build evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: bridge-build-${{ steps.version.outputs.VALUE }}
+          name: supracraft-bridge-${{ steps.version.outputs.VALUE }}
           path: |
             build/**/bridge-*.jar
             target/bridge-sbom.json
+            BUILD-METADATA.properties
             SHA256SUMS
           if-no-files-found: error
 
@@ -147,8 +175,10 @@ jobs:
           print(root.find('m:version', ns).text.strip())
           PY
           )"
-            BASE_VERSION="${SOURCE_VERSION%%-SNAPSHOT*}"
-            VER="${BASE_VERSION}-SNAPSHOT.${GITHUB_RUN_NUMBER}"
+            case "${SOURCE_VERSION}" in
+              *-dev) VER="${SOURCE_VERSION}.${GITHUB_RUN_NUMBER}" ;;
+              *) echo "Non-release source version must end in -dev; got ${SOURCE_VERSION}" >&2; exit 1 ;;
+            esac
           fi
           echo "VALUE=$VER" >> "$GITHUB_OUTPUT"
 
