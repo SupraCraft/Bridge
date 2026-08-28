@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
   "repository": "SupraCraft/Bridge",
   "description": "SupraCraft-maintained Bridge fork: post-compile Maven plugin and bytecode library for Java transformation tooling.",
   "homepage": "https://supracraft.github.io/Bridge/",
@@ -22,6 +22,9 @@
     "workflow": ".github/workflows/pages.yml"
   },
   "brand": {
+    "organization": "SupraCraft",
+    "contract_version": "0.1.0-candidate",
+    "profile": "BRAND_PROFILE.json",
     "manifest": "docs/assets/brand/brand.json",
     "icon": "docs/assets/brand/icon.svg",
     "hero": "docs/assets/brand/hero.svg",
