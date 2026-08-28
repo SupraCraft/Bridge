@@ -38,7 +38,6 @@
     <a class="button" href="https://github.com/SupraCraft/Bridge">Source</a>
     <a class="button" href="https://github.com/SupraCraft/Bridge/releases">Releases</a>
     <a class="button" href="https://github.com/SupraCraft/Bridge/blob/master/docs/artifact-consumption.md">Artifact consumption</a>
-    <a class="button" href="maven/">Release Maven mirror</a>
   </p>
 
   <h2>Canonical artifacts</h2>
@@ -49,7 +48,7 @@
   </div>
 
   <h2>Where to consume Bridge</h2>
-  <p>GitHub Packages is the canonical repository for current immutable Bridge publications. It requires authentication. Release workflows may also publish an anonymous static Maven mirror under <code>/Bridge/maven/</code>; that mirror contains release material, not the rolling development package set.</p>
+  <p>GitHub Packages is the canonical Maven repository for current immutable Bridge publications. It requires authentication. GitHub Releases provide durable standalone release assets and provenance; this Pages site is documentation, not a second Maven publication channel.</p>
 
   <h2>Project contract</h2>
   <p>Builds use the Maven Wrapper, emit Java 21 bytecode, generate SBOM/provenance evidence, and publish the exact bytes already built and tested. See the <a href="https://github.com/SupraCraft/Bridge/blob/master/PROJECT_CONTRACT.json">machine-readable project contract</a> and <a href="https://github.com/SupraCraft/Bridge/blob/master/README.md">README</a> for the current operational details.</p>
