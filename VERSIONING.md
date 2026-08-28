@@ -1,50 +1,50 @@
 # Bridge versioning and provenance
 
-Bridge uses independent semantic versioning. VanillaCord and other consumers must depend on an exact Bridge Maven coordinate; Bridge versions are not lockstep with consumer versions.
+Bridge uses independent semantic versioning. VanillaCord and other consumers depend on an exact Bridge Maven coordinate; Bridge versions are not lockstep with consumer versions.
 
 ## Artifact identity
 
-New artifacts produced by this fork use the SupraCraft namespace:
+Current artifacts use the SupraCraft namespace:
 
-- group: `io.github.supracraft.bridge`
 - parent: `io.github.supracraft.bridge:bridge-parent`
 - runtime API: `io.github.supracraft.bridge:bridge`
 - ASM helper: `io.github.supracraft.bridge:bridge-asm`
 - Maven plugin: `io.github.supracraft.bridge:bridge-plugin`
+- reactor test artifact: `io.github.supracraft.bridge:bridge-test`
 
-The historical `net.ME1312.ASM` coordinates identify upstream/history and are not the canonical coordinates for new SupraCraft builds. Existing packages are retained as historical records; new publication happens only under the SupraCraft group.
-
-Java package names remain `bridge.*`. They are API names rather than Maven ownership metadata, are already neutral, and keeping them stable minimizes compatibility churn and keeps changes suitable for contribution upstream.
+Historical `net.ME1312.ASM:*` coordinates identify upstream/history and are not valid identity for new SupraCraft builds. Java packages remain `bridge.*` because they are neutral API names.
 
 ## Source version
 
-The checked-in parent POM is the single source of truth for the next development line and carries `X.Y.Z-dev`. Module versions inherit it. Do not encode GitHub Actions run numbers or commit hashes in the repository POM and do not duplicate the numeric base version in workflow code.
+The checked-in parent POM is the source of truth for the next development line and carries `X.Y.Z-dev`. Module versions inherit it. Do not encode GitHub run numbers or commit hashes in the source POM.
 
-`SNAPSHOT` is intentionally not used. Maven does not require it, and prior versions such as `0.1.0-SNAPSHOT.25` were not Maven snapshots because they did not end in `-SNAPSHOT`. They were immutable versions with misleading terminology.
+The current source line is:
+
+```text
+0.1.0-dev
+```
+
+Maven `SNAPSHOT` semantics are intentionally not used. Historical names such as `0.1.0-SNAPSHOT.25` were ordinary immutable versions with misleading terminology because they did not end in `-SNAPSHOT`.
 
 ## CI development versions
 
 Ordinary non-tagged CI reads the source POM version and appends the GitHub Actions run number:
 
-`X.Y.Z-dev.<run-number>`
+```text
+X.Y.Z-dev.<run-number>
+```
 
-Example: `0.1.0-dev.31`.
+Each coordinate is immutable and unique. The JAR manifest records the full source commit, ref, and run number so the Maven coordinate does not need to encode source provenance.
 
-Each coordinate is immutable and unique. The JAR manifest records the full source Git commit, ref, run number, source repository, and upstream repository, so the Maven coordinate is not expected to carry source provenance by itself.
+## Release candidates and releases
 
-## Release candidates
+Release candidates use immutable `X.Y.Z-rc.N` versions. Stable release tags use `vX.Y.Z`, and release publication uses `X.Y.Z`.
 
-Release candidates use `X.Y.Z-rc.N` and must be immutable. They are created deliberately; normal CI does not synthesize RC numbers.
-
-## Releases
-
-Release tags use `vX.Y.Z`. Tagged/release builds strip the leading `v` and publish Maven artifacts as `X.Y.Z`.
-
-A consumer release must record the exact Bridge coordinate it consumed. Development automation may select the newest compatible `-dev.<run>` build, but every produced consumer artifact must retain the resolved exact version in its manifest/SBOM/build metadata.
+Consumers should use one exact Bridge version across the related API/helper/plugin modules for a build. Development automation may select a newer immutable `-dev.N` build, but the produced consumer must record the resolved exact version.
 
 ## Provenance
 
-Every Bridge JAR built through Maven contains:
+Every Bridge JAR contains:
 
 - `Implementation-Title`
 - `Implementation-Version`
@@ -55,8 +55,16 @@ Every Bridge JAR built through Maven contains:
 - `Source-Repository: SupraCraft/Bridge`
 - `Upstream-Repository: ME1312/Bridge`
 
-CI additionally emits a CycloneDX aggregate SBOM (`bridge-sbom.json`) and `SHA256SUMS`.
+CI also emits the aggregate CycloneDX SBOM, `BUILD-METADATA.properties`, `REPRODUCIBILITY.properties`, and `SHA256SUMS` with the standalone artifact bundle.
+
+## Reproducibility and publication
+
+The build uses a fixed `project.build.outputTimestamp` and proves the published Bridge JARs byte-for-byte reproducible under identical explicit inputs.
+
+Publication is build-once/promote-tested-bytes: the build job uploads the exact tested JARs and version-set POMs; the write-capable publication job deploys those files without rebuilding the reactor. This is part of the release contract, not an implementation detail.
 
 ## Compatibility policy
 
-A breaking API/ABI change requires a semantic-version change appropriate to its compatibility impact. Consumer compatibility is expressed through dependency coordinates and tests, not by sharing version numbers with Bridge. Maven coordinates identify the producer; upstream lineage is separate provenance and must not be encoded by impersonating upstream coordinates.
+Breaking API/ABI changes require a semantic-version change appropriate to their compatibility impact. Consumer compatibility is expressed through dependency coordinates and tests, not by sharing version numbers with Bridge.
+
+Maven 4 is not a required toolchain until it reaches GA and Bridge has passed an explicit compatibility lane. Current repository validation uses Maven Wrapper 3.3.4 with Maven 3.9.16 and Java 21.
