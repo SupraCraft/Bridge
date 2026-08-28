@@ -1,53 +1,72 @@
 # Bridge ASM
-[![Build Status](https://dev.me1312.net/jenkins/job/Bridge/badge/icon)](https://dev.me1312.net/jenkins/job/Bridge/)
-[![Build Verison](https://img.shields.io/badge/dynamic/xml.svg?label=build&url=https%3A%2F%2Fdev.me1312.net%2Fmaven%2Fnet%2FME1312%2FASM%2Fbridge-plugin%2Fmaven-metadata.xml&query=%2F%2Fversioning%2Frelease&colorB=blue)](https://dev.me1312.net/jenkins/job/Bridge/)<br><br>
-> Fork note: original work by the ME1312 team; this fork adapts the build and publishing pipeline to run on GitHub services (actions + GitHub Packages).
 
-## GitHub Packages auth (local)
-- You need a PAT with `read:packages` (and `write:packages` if publishing) scoped to this repo’s owner.
-- Export it and log in: `export GH_CONFIG_DIR=$PWD/.gh && printf "%s\n" "$PAT" | gh auth login --with-token`
-- Maven will pick up `GITHUB_TOKEN`/`GH_TOKEN` automatically in CI; locally, set `GITHUB_TOKEN=$PAT` before `mvn deploy` to publish to `https://maven.pkg.github.com/<owner>/Bridge`.
+[![Build Status](https://github.com/SupraCraft/Bridge/actions/workflows/build.yml/badge.svg)](https://github.com/SupraCraft/Bridge/actions/workflows/build.yml)
 
-Bridge is a post-compile maven plugin that injects new advanced functionality into the Java language using existing semantics. Currently, we add the following features:
-* [**Redirection of constructors, methods, &amp; fields**](https://github.com/ME1312/Bridge/wiki/Features#bridges) *with* `@Bridge`
-* [**Unsafe native referencing of classes, constructors, methods, &amp; fields**](https://github.com/ME1312/Bridge/wiki/Features#invocations) *with* `Invocation`
-* [**Unrestricted `goto` execution jumping**](https://github.com/ME1312/Bridge/wiki/Features#jumps) *with* `Label` &amp; `Jump`
-* [**Automatic multi-release class forking**](https://github.com/ME1312/Bridge/wiki/Features#forks) *with* `Invocation.LANGUAGE_LEVEL`
-* [**Native unchecked casting, throwing, &amp; handling**](https://github.com/ME1312/Bridge/wiki/Features#unchecked) *with* `Unchecked`
-* [**Post-compile class hierarchy modification**](https://github.com/ME1312/Bridge/wiki/Features#type-adoption) *with* `@Adopt`
-* [**Public implementation hiding**](https://github.com/ME1312/Bridge/wiki/Features#appending-the-synthetic-modifier) *with* `@Synthetic`
-* [**Optional stripping of debug metadata**](https://github.com/ME1312/Bridge/wiki/Features#removing-debug-metadata)
+Bridge is a post-compile Maven plugin that adds bytecode-level language features using existing Java semantics.
 
-*This project can always benefit from your submission of [additional automated testing](https://github.com/ME1312/Bridge/issues/1)!*
-<br><br>
+> Fork identity: this is the SupraCraft-maintained fork of [ME1312/Bridge](https://github.com/ME1312/Bridge). Upstream authorship and license history are preserved, while artifacts built here use SupraCraft-owned Maven coordinates and explicit source/upstream provenance.
 
-## Minecraft & Java 21 quickstart
-- Toolchain: target Java 21 (matches current Minecraft 1.20.5+/1.21) and ASM 9.7 already supports Java 22 class files.
-- Maven: set `maven.compiler.release` to `21` and align the API + plugin versions with `bridge.version`.
+## Canonical artifact identity
+
+New artifacts published from this repository use:
+
+```text
+io.github.supracraft.bridge:bridge
+io.github.supracraft.bridge:bridge-asm
+io.github.supracraft.bridge:bridge-plugin
+```
+
+Historical `net.ME1312.ASM` coordinates identify upstream/history and are not the canonical identity of new SupraCraft builds. Java packages remain `bridge.*` because they are already neutral API names and keeping them stable reduces compatibility churn and keeps changes practical to contribute upstream.
+
+Development versions are immutable `X.Y.Z-dev.N`, release candidates are `X.Y.Z-rc.N`, and stable releases are `X.Y.Z`. The first canonical master publication after the coordinate migration was `0.1.0-dev.34`.
+
+See [VERSIONING.md](VERSIONING.md), [ARTIFACT_IDENTITY.md](ARTIFACT_IDENTITY.md), and [docs/artifact-consumption.md](docs/artifact-consumption.md).
+
+## Features
+
+Upstream feature documentation remains applicable to the shared Bridge API and transformation model:
+
+- [constructor, method, and field redirection](https://github.com/ME1312/Bridge/wiki/Features#bridges) with `@Bridge`
+- [unsafe native references](https://github.com/ME1312/Bridge/wiki/Features#invocations) with `Invocation`
+- [unrestricted jumps](https://github.com/ME1312/Bridge/wiki/Features#jumps) with `Label` and `Jump`
+- [multi-release class forking](https://github.com/ME1312/Bridge/wiki/Features#forks) with `Invocation.LANGUAGE_LEVEL`
+- [unchecked casting, throwing, and handling](https://github.com/ME1312/Bridge/wiki/Features#unchecked) with `Unchecked`
+- [class hierarchy modification](https://github.com/ME1312/Bridge/wiki/Features#type-adoption) with `@Adopt`
+- [synthetic implementation hiding](https://github.com/ME1312/Bridge/wiki/Features#appending-the-synthetic-modifier) with `@Synthetic`
+- optional stripping of debug metadata
+
+## Maven consumer quickstart
+
+GitHub Packages repository:
+
+```text
+https://maven.pkg.github.com/SupraCraft/Bridge
+```
+
+GitHub Packages requires authentication. Use `GITHUB_TOKEN` in Actions or a PAT with `read:packages` locally.
 
 ```xml
 <properties>
-    <bridge.version>00w00a</bridge.version>
-    <maven.compiler.release>21</maven.compiler.release>
+    <bridge.version>0.1.0-dev.34</bridge.version>
 </properties>
 
 <repositories>
     <repository>
-        <id>github</id>
-        <url>https://maven.pkg.github.com/REPO_OWNER/Bridge</url>
+        <id>bridge-github</id>
+        <url>https://maven.pkg.github.com/SupraCraft/Bridge</url>
     </repository>
 </repositories>
 
 <pluginRepositories>
     <pluginRepository>
-        <id>github</id>
-        <url>https://maven.pkg.github.com/REPO_OWNER/Bridge</url>
+        <id>bridge-github</id>
+        <url>https://maven.pkg.github.com/SupraCraft/Bridge</url>
     </pluginRepository>
 </pluginRepositories>
 
 <dependencies>
     <dependency>
-        <groupId>net.ME1312.ASM</groupId>
+        <groupId>io.github.supracraft.bridge</groupId>
         <artifactId>bridge</artifactId>
         <version>${bridge.version}</version>
         <scope>provided</scope>
@@ -57,7 +76,7 @@ Bridge is a post-compile maven plugin that injects new advanced functionality in
 <build>
     <plugins>
         <plugin>
-            <groupId>net.ME1312.ASM</groupId>
+            <groupId>io.github.supracraft.bridge</groupId>
             <artifactId>bridge-plugin</artifactId>
             <version>${bridge.version}</version>
             <executions>
@@ -65,18 +84,6 @@ Bridge is a post-compile maven plugin that injects new advanced functionality in
                     <goals>
                         <goal>bridge</goal>
                     </goals>
-                    <configuration>
-                        <!-- Keep the server jar on the classpath so Bridge can see NMS classes -->
-                        <dependencies>
-                            <dependency>
-                                <groupId>com.mojang</groupId>
-                                <artifactId>minecraft-server</artifactId>
-                                <version>${minecraft.version}</version>
-                                <scope>system</scope>
-                                <systemPath>${minecraft.serverJar}</systemPath>
-                            </dependency>
-                        </dependencies>
-                    </configuration>
                 </execution>
             </executions>
         </plugin>
@@ -84,204 +91,38 @@ Bridge is a post-compile maven plugin that injects new advanced functionality in
 </build>
 ```
 
-### Gradle (Kotlin DSL) starter
-Bridge ships as a Maven plugin. If you build with Gradle, the simplest path is to keep Gradle as the driver and invoke Maven’s Bridge goal after compilation:
+Use one exact Bridge version across the API/helper/plugin modules for a build. Normal integration automation may select a newer immutable `-dev.N` coordinate, but produced consumers should record the exact coordinate they actually used.
 
-```kotlin
-plugins { java }
+## Local GitHub Packages authentication
 
-java {
-    toolchain { languageVersion.set(JavaLanguageVersion.of(21)) }
-}
-
-repositories {
-    mavenCentral()
-    maven("https://dev.me1312.net/maven")
-}
-
-dependencies {
-    compileOnly("net.ME1312.ASM:bridge:00w00a")
-}
-
-val bridge by tasks.registering(Exec::class) {
-    group = "bridge"
-    description = "Runs Bridge's Maven plugin over compiled classes"
-    commandLine(
-        "mvn",
-        "net.ME1312.ASM:bridge-plugin:00w00a:bridge",
-        "-Dbridge.classpath=${layout.buildDirectory.dir(\"classes/java/main\").get().asFile}",
-        "-Dminecraft.serverJar=${providers.environmentVariable(\"MINECRAFT_SERVER_JAR\").getOrElse(\"\")}"
-    )
-    dependsOn(tasks.named("classes"))
-}
-
-tasks.named("build") { dependsOn(bridge) }
+```sh
+export GITHUB_TOKEN="$PAT"
+export GITHUB_ACTOR="your-github-user"
 ```
 
-### Remapping to runtime names
-Minecraft servers use obfuscated runtime names. After the Bridge rewrite step on Mojang/Yarn/Spigot mappings, remap your output using a tool such as TinyRemapper or SpecialSource. Typical flow:
-1. Compile & run Bridge on mapped names.
-2. Invoke TinyRemapper (or SpecialSource) with your chosen mappings to produce the obfuscated jar you ship to servers.
-3. Keep the server jar as a provided dependency for Bridge so hierarchy scanning still works.
+A Maven `settings.xml` server entry should use the repository ID configured for GitHub Packages and those credentials.
 
-### Optional Minecraft integration test
-Activate the `minecraft-it` profile to run a lightweight sanity check against a Mojang-mapped server jar:
+## Minecraft integration test
 
-```
+The optional `minecraft-it` profile exercises Bridge against a supplied Mojang-mapped server JAR:
+
+```sh
 mvn -P minecraft-it -Dminecraft.serverJar=/path/to/server-<version>-mapped.jar test
 ```
 
-The module lives in `bridge-mc-it` and probes `net.minecraft.SharedConstants#getGameVersion().getName()` via `Invocation`. If the signature shifts, the test is skipped with a helpful message.
+The module probes mapped Minecraft classes through Bridge transformations. Runtime remapping to obfuscated server names remains the consuming project's responsibility.
 
-## GitHub Packages (Maven/Gradle)
-GitHub Actions publishes artifacts to `https://maven.pkg.github.com/<repo-owner>/Bridge`. For public repositories, packages are public, but GitHub Packages still requires an authenticated request (use `GITHUB_TOKEN` or a PAT with `read:packages`). The workflow derives `<repo-owner>` automatically from `github.repository_owner`. Versions:
-- Tagged releases: tag `vX.Y.Z` publishes version `X.Y.Z`.
-- Push builds: publish `0.1.0-SNAPSHOT.<run_number>` (useful for CI consumption).
+## Publishing
 
-### Anonymous Maven mirror (GitHub Pages)
-Each published release also pushes a static Maven repo to GitHub Pages at `https://<repo-owner>.github.io/Bridge/maven` so consumers can resolve without authentication (use released versions, not snapshots). Add it as a repository for dependencies and plugins:
-```xml
-<repositories>
-  <repository>
-    <id>bridge-public</id>
-    <url>https://REPO_OWNER.github.io/Bridge/maven</url>
-  </repository>
-</repositories>
-<pluginRepositories>
-  <pluginRepository>
-    <id>bridge-public</id>
-    <url>https://REPO_OWNER.github.io/Bridge/maven</url>
-  </pluginRepository>
-</pluginRepositories>
+GitHub Actions publishes canonical artifacts to GitHub Packages. Non-tagged master builds produce immutable `X.Y.Z-dev.<run>` versions. A `vX.Y.Z` release tag publishes `X.Y.Z`. Release builds may also publish the static Maven repository used by GitHub Pages.
+
+Every Bridge JAR records at least:
+
+```text
+Implementation-Vendor: SupraCraft
+Source-Repository: SupraCraft/Bridge
+Upstream-Repository: ME1312/Bridge
+Build-Commit: <git-sha>
 ```
 
-### Maven consumer snippet
-```xml
-<repositories>
-  <repository>
-    <id>github</id>
-    <url>https://maven.pkg.github.com/${env.GITHUB_REPOSITORY_OWNER}/Bridge</url>
-  </repository>
-</repositories>
-<distributionManagement>
-  <repository>
-    <id>github</id>
-    <url>https://maven.pkg.github.com/${env.GITHUB_REPOSITORY_OWNER}/Bridge</url>
-  </repository>
-</distributionManagement>
-```
-And for plugins:
-```xml
-<pluginRepositories>
-  <pluginRepository>
-    <id>github</id>
-    <url>https://maven.pkg.github.com/${env.GITHUB_REPOSITORY_OWNER}/Bridge</url>
-  </pluginRepository>
-</pluginRepositories>
-<!-- The plugin repository is required so Maven can resolve net.ME1312.ASM:bridge-plugin
-     from GitHub Packages when executing the bridge goal. -->
-```
-Authenticate with a token via `~/.m2/settings.xml`:
-```xml
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">
-  <servers>
-    <server>
-      <id>github</id>
-      <username>${env.GITHUB_ACTOR}</username>
-      <password>${env.GITHUB_TOKEN}</password>
-    </server>
-  </servers>
-</settings>
-```
-If you consume from GitHub Actions, you can omit the settings file and let `actions/setup-java` inject the credentials:
-```yaml
-- uses: actions/setup-java@v4
-  with:
-    distribution: temurin
-    java-version: 21
-    server-id: github
-    server-username: GITHUB_ACTOR
-    server-password: GITHUB_TOKEN
-```
-
-### Gradle consumer snippet (Kotlin DSL)
-```kotlin
-val bridgeOwner = providers.environmentVariable("GITHUB_REPOSITORY_OWNER")
-    .orElse(providers.environmentVariable("BRIDGE_OWNER"))
-    .orElse("REPO_OWNER")
-    .get()
-
-repositories {
-    mavenCentral()
-    maven {
-        url = uri("https://maven.pkg.github.com/$bridgeOwner/Bridge")
-        credentials {
-            username = providers.environmentVariable("GITHUB_ACTOR").orElse("token").get()
-            // For public packages, a token is still required; GITHUB_TOKEN or a PAT with read:packages works.
-            password = providers.environmentVariable("GITHUB_TOKEN")
-                .orElse(providers.environmentVariable("GH_TOKEN"))
-                .orElse("")
-                .get()
-        }
-    }
-}
-dependencies {
-    // For a tagged release
-    compileOnly("net.ME1312.ASM:bridge:0.1.0")
-    // Or for the latest CI snapshot, use the published run number
-    // compileOnly("net.ME1312.ASM:bridge:0.1.0-SNAPSHOT.<run_number>")
-}
-```
-
-> Tip: In GitHub Actions, `GITHUB_REPOSITORY_OWNER` is set automatically. If consuming from a different repo owner, set `BRIDGE_OWNER` to override. Use `GITHUB_TOKEN` or a PAT with `packages:read` to authenticate.
-
-```xml
-<!-- required to access the api -->
-<repositories>
-    <repository>
-        <id>ME1312.net</id>
-        <url>https://dev.me1312.net/maven</url>
-    </repository>
-</repositories>
-
-<!-- required to access the maven plugin -->
-<pluginRepositories>
-    <pluginRepository>
-        <id>ME1312.net</id>
-        <url>https://dev.me1312.net/maven</url>
-    </pluginRepository>
-</pluginRepositories>
-
-<!-- ensures the api and maven plugin use the same version -->
-<properties> <!-- don't forget to replace this value with a real build id! -->
-    <bridge.version>00w00a</bridge.version>
-</properties>
-
-<!-- provides you an api to compile against that isn't required at runtime -->
-<dependencies>
-    <dependency>
-        <groupId>net.ME1312.ASM</groupId>
-        <artifactId>bridge</artifactId>
-        <version>${bridge.version}</version>
-        <scope>provided</scope>
-    </dependency>
-</dependencies>
-
-<!-- runs a maven plugin to build your bridges -->
-<build>
-    <plugins>
-        <plugin>
-            <groupId>net.ME1312.ASM</groupId>
-            <artifactId>bridge-plugin</artifactId>
-            <version>${bridge.version}</version>
-            <executions>
-                <execution>
-                    <goals>
-                        <goal>bridge</goal>
-                    </goals>
-                </execution>
-            </executions>
-        </plugin>
-    </plugins>
-</build>
-```
+This keeps producer identity and upstream lineage separate rather than encoding upstream ownership into newly produced artifacts.
