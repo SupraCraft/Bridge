@@ -1,9 +1,16 @@
 {
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
   "repository": "SupraCraft/Bridge",
   "upstream_repository": "ME1312/Bridge",
   "role": "post-compile Maven transformation system and bytecode support library",
   "source_version": "0.1.0-dev",
+  "brand": {
+    "organization": "SupraCraft",
+    "contract_version": "0.1.0-candidate",
+    "profile": "BRAND_PROFILE.json",
+    "governance_source": "SupraCraft/brand-governance-private:profiles/projects/Bridge.json",
+    "runtime_dependency_on_private_repo": false
+  },
   "artifact": {
     "group": "io.github.supracraft.bridge",
     "parent": "bridge-parent",
@@ -59,6 +66,7 @@
     "pages_source": "github-actions",
     "pages_workflow": ".github/workflows/pages.yml",
     "site_builder": "scripts/build-public-site.py",
+    "brand_profile": "BRAND_PROFILE.json",
     "brand_manifest": "docs/assets/brand/brand.json",
     "brand_guidelines": "docs/brand-guidelines.md",
     "machine_endpoints": ["project.json", "github.json", "brand.json", "artifacts.json", "llms.txt"],
@@ -81,6 +89,7 @@
     "diagnostics": "docs/diagnostics.md",
     "artifact_retention": "docs/artifact-retention.md",
     "github_metadata": "GITHUB_METADATA.json",
+    "brand_profile": "BRAND_PROFILE.json",
     "pages_entrypoint": "docs/index.html",
     "brand_guidelines": "docs/brand-guidelines.md"
   }
