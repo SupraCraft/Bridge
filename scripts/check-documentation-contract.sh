@@ -19,6 +19,7 @@ required=(
   bridge/resources/META-INF/supracraft/bridge/icon.svg
   scripts/apply-github-metadata.py
   scripts/build-public-site.py
+  scripts/check-public-site.py
   .github/workflows/pages.yml
 )
 for path in "${required[@]}"; do
@@ -40,6 +41,7 @@ profile = json.loads(Path('BRAND_PROFILE.json').read_text(encoding='utf-8'))
 metadata = json.loads(Path('GITHUB_METADATA.json').read_text(encoding='utf-8'))
 brand = json.loads(Path('docs/assets/brand/brand.json').read_text(encoding='utf-8'))
 page = Path('docs/index.html').read_text(encoding='utf-8')
+pages_workflow = Path('.github/workflows/pages.yml').read_text(encoding='utf-8')
 
 assert contract['repository'] == 'SupraCraft/Bridge'
 assert contract['artifact']['group'] == 'io.github.supracraft.bridge'
@@ -53,6 +55,7 @@ assert profile['identity']['minecraft_specific'] is False
 assert profile['packaged_resources']['source_path'] == 'bridge/resources/META-INF/supracraft/bridge/icon.svg'
 assert contract['validation']['publication_model'] == 'build-once-promote-tested-bytes'
 assert contract['validation']['public_site_builder'] == 'scripts/build-public-site.py'
+assert contract['validation']['public_site_check'] == 'scripts/check-public-site.py'
 assert contract['provenance']['published_maven_bytes_are_tested_bytes'] is True
 assert contract['public_surface']['github_metadata'] == 'GITHUB_METADATA.json'
 assert contract['public_surface']['metadata_apply'] == 'scripts/apply-github-metadata.py'
@@ -78,6 +81,9 @@ assert 'io.github.supracraft.bridge' in page
 assert metadata['homepage'] in page
 assert metadata['description'] in page
 assert 'Minecraft' not in brand['identity']
+assert 'scripts/check-public-site.py' in pages_workflow
+assert '--site-dir build/public-site' in pages_workflow
+assert '--base-url "${{ steps.deployment.outputs.page_url }}"' in pages_workflow
 
 root = ET.parse('pom.xml').getroot()
 ns = {'m': 'http://maven.apache.org/POM/4.0.0'}
@@ -97,6 +103,7 @@ assert contract['toolchain']['maven'] == match.group(1)
 
 with tempfile.TemporaryDirectory() as tmp:
     subprocess.run(['python3', 'scripts/build-public-site.py', '--output', tmp], check=True)
+    subprocess.run(['python3', 'scripts/check-public-site.py', '--site-dir', tmp], check=True)
     out = Path(tmp)
     for name in contract['public_surface']['machine_endpoints']:
         assert (out / name).is_file(), f'missing generated endpoint: {name}'
