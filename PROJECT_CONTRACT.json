@@ -49,6 +49,12 @@
     "release_assets": "durable-historical-provenance",
     "maven_dev_package_cleanup": "reference-gated-and-deferred-until-stable-release-line"
   },
+  "public_surface": {
+    "github_metadata": "GITHUB_METADATA.json",
+    "pages_entrypoint": "docs/index.html",
+    "pages_url": "https://supracraft.github.io/Bridge/",
+    "upstream_attribution_required": true
+  },
   "provenance": {
     "source_repository": "SupraCraft/Bridge",
     "upstream_repository": "ME1312/Bridge",
@@ -64,6 +70,8 @@
     "versioning": "VERSIONING.md",
     "artifact_consumption": "docs/artifact-consumption.md",
     "diagnostics": "docs/diagnostics.md",
-    "artifact_retention": "docs/artifact-retention.md"
+    "artifact_retention": "docs/artifact-retention.md",
+    "github_metadata": "GITHUB_METADATA.json",
+    "pages_entrypoint": "docs/index.html"
   }
 }
