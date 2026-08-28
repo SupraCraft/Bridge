@@ -5,6 +5,7 @@ required=(
   README.md
   AGENTS.md
   PROJECT_CONTRACT.json
+  BRAND_PROFILE.json
   GITHUB_METADATA.json
   ARTIFACT_IDENTITY.md
   VERSIONING.md
@@ -35,6 +36,7 @@ from pathlib import Path
 import subprocess
 
 contract = json.loads(Path('PROJECT_CONTRACT.json').read_text(encoding='utf-8'))
+profile = json.loads(Path('BRAND_PROFILE.json').read_text(encoding='utf-8'))
 metadata = json.loads(Path('GITHUB_METADATA.json').read_text(encoding='utf-8'))
 brand = json.loads(Path('docs/assets/brand/brand.json').read_text(encoding='utf-8'))
 page = Path('docs/index.html').read_text(encoding='utf-8')
@@ -42,6 +44,13 @@ page = Path('docs/index.html').read_text(encoding='utf-8')
 assert contract['repository'] == 'SupraCraft/Bridge'
 assert contract['artifact']['group'] == 'io.github.supracraft.bridge'
 assert contract['artifact']['embedded_project_icon'] == 'bridge:META-INF/supracraft/bridge/icon.svg'
+assert contract['brand']['organization'] == profile['organization_brand'] == 'SupraCraft'
+assert contract['brand']['contract_version'] == profile['brand_contract_version'] == brand['organization_brand']['contract_version']
+assert contract['brand']['profile'] == contract['public_surface']['brand_profile'] == 'BRAND_PROFILE.json'
+assert contract['brand']['runtime_dependency_on_private_repo'] is False
+assert profile['snapshot_policy'] == 'vendored-reviewed-snapshot-no-private-runtime-dependency'
+assert profile['identity']['minecraft_specific'] is False
+assert profile['packaged_resources']['source_path'] == 'bridge/resources/META-INF/supracraft/bridge/icon.svg'
 assert contract['validation']['publication_model'] == 'build-once-promote-tested-bytes'
 assert contract['validation']['public_site_builder'] == 'scripts/build-public-site.py'
 assert contract['provenance']['published_maven_bytes_are_tested_bytes'] is True
@@ -62,6 +71,8 @@ assert metadata['pages']['workflow'] == '.github/workflows/pages.yml'
 assert metadata['topics'] == sorted(set(metadata['topics']))
 assert brand['project'] == 'Bridge'
 assert brand['identity'] == 'Java bytecode tooling'
+assert brand['organization_brand']['profile_snapshot'] == 'BRAND_PROFILE.json'
+assert brand['organization_brand']['runtime_dependency_on_private_repo'] is False
 assert 'ME1312/Bridge' in page
 assert 'io.github.supracraft.bridge' in page
 assert metadata['homepage'] in page
@@ -98,6 +109,7 @@ active_docs=(
   README.md
   AGENTS.md
   PROJECT_CONTRACT.json
+  BRAND_PROFILE.json
   GITHUB_METADATA.json
   docs/artifact-consumption.md
   docs/index.html
