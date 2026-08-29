@@ -29,11 +29,19 @@ Only after the aggregate verdict passes may the write-capable job publish the al
 
 Before qualification and again immediately before publication, the workflow verifies that the candidate version is absent from every Bridge Maven module. After deployment it verifies that the version is present for every published module.
 
+The retained evidence is part of the release contract. `BUILD-METADATA.properties`, `REPRODUCIBILITY.properties`, checksums, JAR manifests, qualification evidence, and publication evidence must describe the same source commit, ref, run, and exact candidate version. An internally inconsistent evidence bundle disqualifies that candidate from stable promotion even when the published JAR bytes themselves are otherwise valid.
+
 ## Immutability and failures
 
 A published candidate is never overwritten. If publication completes, or if publication fails after any module has become visible, corrections use the next candidate number (`rc.2`, `rc.3`, and so on). A rerun that finds an existing coordinate fails closed rather than replacing bytes.
 
 The release branch and Actions evidence are operational records; stable release tags remain `vX.Y.Z`. Candidate publication does not imply stable release readiness.
+
+Published candidate status records live under `release-candidates/`. They preserve whether a candidate remains eligible for promotion and why a published coordinate was superseded.
+
+## Candidate history
+
+- `0.1.0-rc.1` was published successfully to GitHub Packages and its JAR manifests carry the correct source provenance. It is **not eligible for stable promotion** because its retained `REPRODUCIBILITY.properties` recorded unresolved CI placeholders for the build commit, ref, and run. The immutable coordinate is preserved and a later candidate carries the corrected evidence contract. See `release-candidates/0.1.0-rc.1.json`.
 
 ## Consumer qualification
 
