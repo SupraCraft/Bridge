@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.10.0",
+  "schema_version": "1.11.0",
   "repository": "SupraCraft/Bridge",
   "upstream_repository": "ME1312/Bridge",
   "role": "post-compile Maven transformation system and bytecode support library",
@@ -62,6 +62,20 @@
     "documentation_contract": "scripts/check-documentation-contract.sh",
     "public_site_builder": "scripts/build-public-site.py",
     "public_site_check": "scripts/check-public-site.py",
+    "public_site_readiness_workflow": ".github/workflows/public-site-readiness.yml",
+    "public_site_playwright_config": "playwright.config.mjs",
+    "public_site_browser_test": "tests/site/public-site.spec.mjs",
+    "public_site_accessibility_engine": "@axe-core/playwright",
+    "public_site_lighthouse_config": "lighthouserc.cjs",
+    "public_site_link_checker": "lycheeverse/lychee-action",
+    "browser_projects": [
+      "desktop-chromium",
+      "desktop-firefox",
+      "desktop-webkit",
+      "android-chromium",
+      "iphone-webkit"
+    ],
+    "accessibility_target": "WCAG 2.2 AA",
     "compatibility_workflow": ".github/workflows/compatibility.yml",
     "classfile_compatibility_workflow": ".github/workflows/classfile-compatibility.yml",
     "classfile_compatibility_runner": "scripts/run-classfile-compatibility.sh",
@@ -112,6 +126,14 @@
     "brand_profile": "BRAND_PROFILE.json",
     "brand_manifest": "docs/assets/brand/brand.json",
     "brand_guidelines": "docs/brand-guidelines.md",
+    "readiness_policy": "docs/PUBLIC_SITE_RELEASE_READINESS.md",
+    "human_routes": {
+      "use": "use/",
+      "compatibility": "compatibility/",
+      "releases": "releases/",
+      "release_info": "releases/<version>/",
+      "accessibility": "accessibility/"
+    },
     "machine_endpoints": ["project.json", "compatibility.json", "github.json", "brand.json", "artifacts.json", "llms.txt"],
     "upstream_attribution_required": true
   },
@@ -146,6 +168,7 @@
     "brand_profile": "BRAND_PROFILE.json",
     "pages_entrypoint": "docs/index.html",
     "brand_guidelines": "docs/brand-guidelines.md",
+    "public_site_release_readiness": "docs/PUBLIC_SITE_RELEASE_READINESS.md",
     "run_report_schema": "schemas/bridge-run-report.schema.json"
   }
 }

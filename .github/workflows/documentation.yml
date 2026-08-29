@@ -16,6 +16,7 @@ on:
       - 'schemas/**'
       - 'compatibility/**'
       - 'scripts/check-documentation-contract.sh'
+      - 'scripts/check-public-site-readiness-contract.py'
       - 'scripts/check-release-qualification-contract.py'
       - 'scripts/check-version-neutral-workflows.py'
       - 'scripts/aggregate-release-qualification.py'
@@ -29,6 +30,10 @@ on:
       - 'scripts/check-run-report.py'
       - 'scripts/run-classfile-compatibility.sh'
       - 'scripts/run-modern-bytecode-compatibility.sh'
+      - 'package.json'
+      - 'playwright.config.mjs'
+      - 'lighthouserc.cjs'
+      - 'tests/site/**'
       - '.github/PULL_REQUEST_TEMPLATE.md'
       - '.github/ISSUE_TEMPLATE/**'
       - '.github/workflows/documentation.yml'
@@ -36,6 +41,7 @@ on:
       - '.github/workflows/classfile-compatibility.yml'
       - '.github/workflows/modern-bytecode-compatibility.yml'
       - '.github/workflows/release-qualification.yml'
+      - '.github/workflows/public-site-readiness.yml'
       - '.github/workflows/pages.yml'
       - 'pom.xml'
       - 'bridge/pom.xml'
@@ -58,6 +64,7 @@ on:
       - 'schemas/**'
       - 'compatibility/**'
       - 'scripts/check-documentation-contract.sh'
+      - 'scripts/check-public-site-readiness-contract.py'
       - 'scripts/check-release-qualification-contract.py'
       - 'scripts/check-version-neutral-workflows.py'
       - 'scripts/aggregate-release-qualification.py'
@@ -71,6 +78,10 @@ on:
       - 'scripts/check-run-report.py'
       - 'scripts/run-classfile-compatibility.sh'
       - 'scripts/run-modern-bytecode-compatibility.sh'
+      - 'package.json'
+      - 'playwright.config.mjs'
+      - 'lighthouserc.cjs'
+      - 'tests/site/**'
       - '.github/PULL_REQUEST_TEMPLATE.md'
       - '.github/ISSUE_TEMPLATE/**'
       - '.github/workflows/documentation.yml'
@@ -78,6 +89,7 @@ on:
       - '.github/workflows/classfile-compatibility.yml'
       - '.github/workflows/modern-bytecode-compatibility.yml'
       - '.github/workflows/release-qualification.yml'
+      - '.github/workflows/public-site-readiness.yml'
       - '.github/workflows/pages.yml'
       - 'pom.xml'
       - 'bridge/pom.xml'
@@ -97,6 +109,8 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
       - name: Validate documentation and public surface
         run: bash ./scripts/check-documentation-contract.sh
+      - name: Validate public-site readiness wiring
+        run: python3 ./scripts/check-public-site-readiness-contract.py
       - name: Validate release qualification contract
         run: python3 ./scripts/check-release-qualification-contract.py
       - name: Validate version-neutral reusable workflows
