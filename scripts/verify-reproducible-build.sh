@@ -9,6 +9,7 @@ fi
 resolve_ci_value() {
   case "$1" in
     '${SOURCE_SHA}') printf '%s' "${SOURCE_SHA:?SOURCE_SHA is required}" ;;
+    '${SOURCE_REF}') printf '%s' "${SOURCE_REF:?SOURCE_REF is required}" ;;
     '${GITHUB_REF}') printf '%s' "${GITHUB_REF:?GITHUB_REF is required}" ;;
     '${GITHUB_RUN_NUMBER}') printf '%s' "${GITHUB_RUN_NUMBER:?GITHUB_RUN_NUMBER is required}" ;;
     *) printf '%s' "$1" ;;
