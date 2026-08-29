@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://supracraft.github.io/Bridge/schemas/bridge-run-report.schema.json",
+  "title": "Bridge run report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "status",
+    "bridgeVersion",
+    "asmVersion",
+    "hostJavaVersion",
+    "classes",
+    "transformations",
+    "timingNanos",
+    "diagnostics"
+  ],
+  "properties": {
+    "schema": {"const": "bridge-run/1"},
+    "status": {"enum": ["success", "no-op", "skipped", "failed"]},
+    "bridgeVersion": {"type": "string"},
+    "asmVersion": {"type": "string"},
+    "hostJavaVersion": {"type": "string"},
+    "classes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["examined", "transformed"],
+      "properties": {
+        "examined": {"type": "integer", "minimum": 0},
+        "transformed": {"type": "integer", "minimum": 0}
+      }
+    },
+    "transformations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bridges", "invocations", "adjustments", "removals", "forks"],
+      "properties": {
+        "bridges": {"type": "integer", "minimum": 0},
+        "invocations": {"type": "integer", "minimum": 0},
+        "adjustments": {"type": "integer", "minimum": 0},
+        "removals": {"type": "integer", "minimum": 0},
+        "forks": {"type": "integer", "minimum": 0}
+      }
+    },
+    "timingNanos": {
+      "description": "Observational timing only; never part of artifact identity.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hierarchyScan", "transform", "total"],
+      "properties": {
+        "hierarchyScan": {"type": "integer", "minimum": 0},
+        "transform": {"type": "integer", "minimum": 0},
+        "total": {"type": "integer", "minimum": 0}
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "severity", "message"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^BRIDGE-[WE][0-9]{3}$"},
+          "severity": {"enum": ["warning", "error"]},
+          "message": {"type": "string"},
+          "causeType": {"type": "string"}
+        }
+      }
+    }
+  }
+}
