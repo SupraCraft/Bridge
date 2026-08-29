@@ -5,7 +5,9 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -13,6 +15,10 @@ import java.util.stream.Stream;
  *
  * Usage:
  *   java scripts/VerifyClassFiles.java <verify-root> <classpath-root>...
+ *
+ * The verification root is always part of the hierarchy-resolution classpath,
+ * so related classes in the same output tree (nestmates, sealed hierarchies,
+ * records, etc.) can resolve one another without callers repeating the root.
  */
 public final class VerifyClassFiles {
     private VerifyClassFiles() {}
@@ -27,13 +33,15 @@ public final class VerifyClassFiles {
             throw new IllegalArgumentException("Verification root is not a directory: " + verifyRoot);
         }
 
-        List<URL> classpath = new ArrayList<>();
+        Set<Path> roots = new LinkedHashSet<>();
+        roots.add(verifyRoot);
         for (int index = 1; index < args.length; ++index) {
             Path root = Path.of(args[index]).toAbsolutePath().normalize();
-            if (Files.isDirectory(root)) {
-                classpath.add(root.toUri().toURL());
-            }
+            if (Files.isDirectory(root)) roots.add(root);
         }
+
+        List<URL> classpath = new ArrayList<>();
+        for (Path root : roots) classpath.add(root.toUri().toURL());
 
         int verified = 0;
         List<String> failures = new ArrayList<>();

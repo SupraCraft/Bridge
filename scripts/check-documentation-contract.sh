@@ -23,13 +23,20 @@ required=(
   bridge/resources/META-INF/supracraft/bridge/icon.svg
   compatibility/fixtures/classfile-project/pom.xml
   compatibility/fixtures/classfile-project/CompatibilityFixture.java
+  compatibility/fixtures/modern-project/pom.xml
+  compatibility/fixtures/modern-sources/java21/ModernFixture.java
+  compatibility/fixtures/modern-sources/java25/FlexibleConstructorFixture.java
+  compatibility/fixtures/modern-sources/module21/module-info.java
+  compatibility/fixtures/modern-sources/module21/modern/module/ModuleFixture.java
   scripts/apply-github-metadata.py
   scripts/build-public-site.py
   scripts/check-public-site.py
   scripts/check-run-report.py
   scripts/run-classfile-compatibility.sh
+  scripts/run-modern-bytecode-compatibility.sh
   .github/workflows/compatibility.yml
   .github/workflows/classfile-compatibility.yml
+  .github/workflows/modern-bytecode-compatibility.yml
   .github/workflows/pages.yml
 )
 for path in "${required[@]}"; do
@@ -56,6 +63,7 @@ page = Path('docs/index.html').read_text(encoding='utf-8')
 pages_workflow = Path('.github/workflows/pages.yml').read_text(encoding='utf-8')
 compatibility_workflow = Path('.github/workflows/compatibility.yml').read_text(encoding='utf-8')
 classfile_workflow = Path('.github/workflows/classfile-compatibility.yml').read_text(encoding='utf-8')
+modern_workflow = Path('.github/workflows/modern-bytecode-compatibility.yml').read_text(encoding='utf-8')
 
 assert contract['repository'] == 'SupraCraft/Bridge'
 assert contract['artifact']['group'] == 'io.github.supracraft.bridge'
@@ -73,10 +81,13 @@ assert contract['validation']['public_site_check'] == 'scripts/check-public-site
 assert contract['validation']['compatibility_workflow'] == '.github/workflows/compatibility.yml'
 assert contract['validation']['classfile_compatibility_workflow'] == '.github/workflows/classfile-compatibility.yml'
 assert contract['validation']['classfile_compatibility_runner'] == 'scripts/run-classfile-compatibility.sh'
+assert contract['validation']['modern_bytecode_compatibility_workflow'] == '.github/workflows/modern-bytecode-compatibility.yml'
+assert contract['validation']['modern_bytecode_compatibility_runner'] == 'scripts/run-modern-bytecode-compatibility.sh'
 assert contract['validation']['run_report_validator'] == 'scripts/check-run-report.py'
 assert contract['compatibility']['contract'] == 'COMPATIBILITY.json'
 assert contract['compatibility']['host_workflow'] == '.github/workflows/compatibility.yml'
 assert contract['compatibility']['classfile_workflow'] == '.github/workflows/classfile-compatibility.yml'
+assert contract['compatibility']['modern_bytecode_workflow'] == '.github/workflows/modern-bytecode-compatibility.yml'
 assert contract['compatibility']['support_claims_require_evidence'] is True
 assert contract['compatibility']['one_bridge_build_per_bridge_version'] is True
 assert contract['provenance']['published_maven_bytes_are_tested_bytes'] is True
@@ -149,6 +160,17 @@ assert compatibility['class_files']['producer_jdk'] == 26
 assert compatibility['class_files']['workflow'] == '.github/workflows/classfile-compatibility.yml'
 assert compatibility['class_files']['runner'] == 'scripts/run-classfile-compatibility.sh'
 assert compatibility['class_files']['evidence_schema'] == 'bridge-classfile-matrix/1'
+modern = compatibility['modern_bytecode']
+assert modern['cross_host_transform'] == [21, 26]
+assert modern['producer_jdk'] == 26
+assert modern['workflow'] == '.github/workflows/modern-bytecode-compatibility.yml'
+assert modern['runner'] == 'scripts/run-modern-bytecode-compatibility.sh'
+assert modern['evidence_schema'] == 'bridge-modern-bytecode/1'
+assert [case['id'] for case in modern['cases']] == [
+    'java21-modern-language-bytecode',
+    'java25-flexible-constructor',
+    'java21-module-info',
+]
 
 for module in ('bridge-asm', 'bridge-plugin'):
     module_root = ET.parse(f'{module}/pom.xml').getroot()
@@ -169,6 +191,10 @@ for host in compatibility['class_files']['cross_host_transform']:
     assert f"'{host}'" in classfile_workflow, f'missing class-file host JDK {host}'
 assert 'bash scripts/run-classfile-compatibility.sh' in classfile_workflow
 assert 'bridge-classfile-compatibility-host-' in classfile_workflow
+for host in modern['cross_host_transform']:
+    assert f"'{host}'" in modern_workflow, f'missing modern-bytecode host JDK {host}'
+assert 'bash scripts/run-modern-bytecode-compatibility.sh' in modern_workflow
+assert 'bridge-modern-bytecode-host-' in modern_workflow
 
 wrapper = Path('.mvn/wrapper/maven-wrapper.properties').read_text(encoding='utf-8')
 match = re.search(r'apache-maven-([0-9.]+)-bin', wrapper)
