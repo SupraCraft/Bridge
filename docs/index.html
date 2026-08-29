@@ -40,6 +40,8 @@
     <div class="fact"><strong>Maven group</strong><code>io.github.supracraft.bridge</code></div>
     <div class="fact"><strong>Source line</strong><code id="source-version">0.1.0-dev</code></div>
     <div class="fact"><strong>Java bytecode</strong><span id="java-release">21</span></div>
+    <div class="fact"><strong>ASM baseline</strong><span id="asm-version">9.10.1</span></div>
+    <div class="fact"><strong>PR host-JDK lanes</strong><span id="host-jvms">21, 25, 26</span></div>
     <div class="fact"><strong>Publication</strong>GitHub Packages + durable release assets</div>
   </section>
 
@@ -50,6 +52,12 @@
       <article class="card"><h3>Bytecode support</h3><p>Provides runtime/API and ASM helper modules used by transformed consumers.</p></article>
       <article class="card"><h3>Exact publications</h3><p>CI builds once, validates the produced bytes, and promotes those tested artifacts.</p></article>
     </div>
+  </section>
+
+  <section class="section">
+    <h2>Compatibility qualification</h2>
+    <p>Bridge uses one artifact set per Bridge version. The compatibility policy defines blocking, release-qualification, and early-access JVM lanes; only completed CI/release evidence establishes tested support.</p>
+    <p><a href="compatibility.json">Machine-readable compatibility policy</a> · <a href="https://github.com/SupraCraft/Bridge/blob/master/docs/roadmap/0.1.0-uplift.md">0.1.0 qualification plan</a></p>
   </section>
 
   <section class="section">
@@ -65,12 +73,13 @@
   <section class="section machine">
     <h2>For automation and agents</h2>
     <p class="quiet">Generated Pages endpoints mirror canonical repository contracts. Prefer these or the source files over scraping presentation HTML.</p>
-    <p><a href="project.json">project.json</a><a href="github.json">github.json</a><a href="artifacts.json">artifacts.json</a><a href="brand.json">brand.json</a><a href="llms.txt">llms.txt</a></p>
+    <p><a href="project.json">project.json</a><a href="compatibility.json">compatibility.json</a><a href="github.json">github.json</a><a href="artifacts.json">artifacts.json</a><a href="brand.json">brand.json</a><a href="llms.txt">llms.txt</a></p>
   </section>
 </main>
 <footer class="footer"><div class="shell">Bridge · SupraCraft · MPL-2.0 · <a href="https://github.com/SupraCraft/Bridge/blob/master/docs/brand-guidelines.md">Brand/public-surface notes</a></div></footer>
 <script>
 fetch('project.json').then(r=>r.ok?r.json():null).then(p=>{if(!p)return;document.getElementById('source-version').textContent=p.source_version;document.getElementById('java-release').textContent=p.toolchain.java_bytecode_release}).catch(()=>{});
+fetch('compatibility.json').then(r=>r.ok?r.json():null).then(c=>{if(!c)return;document.getElementById('asm-version').textContent=c.asm.version;document.getElementById('host-jvms').textContent=c.host_jvm.pull_request_blocking.join(', ')}).catch(()=>{});
 </script>
 </body>
 </html>
