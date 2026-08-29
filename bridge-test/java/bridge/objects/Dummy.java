@@ -102,19 +102,4 @@ class Dummy extends Jester {
             return (int) value;
         }
     }
-
-    // TODO integrate the following into the test suite with method invocations
-    public static void main(String[] args) {
-        Dummy dummy = new Dummy(null);
-        System.out.println(dummy.superInterface(1));
-        System.out.println(dummy.superClass(2));
-        System.out.println(dummy.privateInterface(3));
-        System.out.println(dummy.privateClass(4));
-        System.out.println(Dummy.privateNestInterface(5));
-        System.out.println(Dummy.privateNestClass(6));
-        System.out.println(Dummy.privateStaticNestInterface(7));
-        System.out.println(Dummy.privateStaticNestClass(8));
-        System.out.println();
-        System.out.println("Success!");
-    }
 }

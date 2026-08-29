@@ -77,6 +77,15 @@ jobs:
           build/bridge-plugin/classes
           build/bridge-test/classes
 
+      - name: Verify packaged multi-release fork
+        run: |
+          jar='build/bridge-test/bridge-test-0.1.0-dev.jar'
+          test -s "$jar"
+          unzip -p "$jar" META-INF/MANIFEST.MF | tr -d '\r' > /tmp/bridge-test-manifest.mf
+          grep -Fx 'Multi-Release: true' /tmp/bridge-test-manifest.mf
+          unzip -l "$jar" | grep -F 'META-INF/versions/25/bridge/objects/Forks.class'
+          java -Xverify:all -cp "$jar" bridge.objects.Forks
+
   next-jdk-advisory:
     name: host-jdk-27-ea-advisory
     runs-on: ubuntu-latest
@@ -108,3 +117,12 @@ jobs:
           build/bridge-asm/classes
           build/bridge-plugin/classes
           build/bridge-test/classes
+
+      - name: Verify packaged multi-release fork
+        run: |
+          jar='build/bridge-test/bridge-test-0.1.0-dev.jar'
+          test -s "$jar"
+          unzip -p "$jar" META-INF/MANIFEST.MF | tr -d '\r' > /tmp/bridge-test-manifest.mf
+          grep -Fx 'Multi-Release: true' /tmp/bridge-test-manifest.mf
+          unzip -l "$jar" | grep -F 'META-INF/versions/25/bridge/objects/Forks.class'
+          java -Xverify:all -cp "$jar" bridge.objects.Forks

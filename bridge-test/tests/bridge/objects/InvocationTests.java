@@ -74,7 +74,6 @@ public class InvocationTests {
         Invocations.SC2I();
         Invocations.SC2J();
 
-
         Invocations.VL0A();
         Invocations.VL0B();
 
@@ -115,11 +114,35 @@ public class InvocationTests {
         Invocations.VF2I();
     }
 
+    public void testMethods() {
+        Dummy dummy = new Dummy(null);
+        expect(1F, dummy.superInterface(1D), "interface-super method invocation");
+        expect(2F, dummy.superClass(2D), "class-super method invocation");
+        expect(3, dummy.privateInterface(3L), "private interface method invocation");
+        expect(4, dummy.privateClass(4L), "private class method invocation");
+        expect(5, Dummy.privateNestInterface(5L), "private nest-interface method invocation");
+        expect(6, Dummy.privateNestClass(6L), "private nest-class method invocation");
+        expect(7, Dummy.privateStaticNestInterface(7L), "private static nest-interface method invocation");
+        expect(8, Dummy.privateStaticNestClass(8L), "private static nest-class method invocation");
+    }
+
     public void testSynthetic() throws Throwable {
         assert Jester.class.isSynthetic();
         synthetic(Jester.class.getDeclaredFields());
         synthetic(Jester.class.getDeclaredConstructors());
         synthetic(Jester.class.getDeclaredMethods());
+    }
+
+    private static void expect(float expected, float actual, String label) {
+        if (Float.compare(expected, actual) != 0) {
+            throw new AssertionError(label + ": expected " + expected + ", got " + actual);
+        }
+    }
+
+    private static void expect(int expected, int actual, String label) {
+        if (expected != actual) {
+            throw new AssertionError(label + ": expected " + expected + ", got " + actual);
+        }
     }
 
     private static void synthetic(Member[] members) throws Throwable {
