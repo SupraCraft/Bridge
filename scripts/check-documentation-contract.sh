@@ -21,11 +21,15 @@ required=(
   docs/assets/brand/brand.json
   schemas/bridge-run-report.schema.json
   bridge/resources/META-INF/supracraft/bridge/icon.svg
+  compatibility/fixtures/classfile-project/pom.xml
+  compatibility/fixtures/classfile-project/CompatibilityFixture.java
   scripts/apply-github-metadata.py
   scripts/build-public-site.py
   scripts/check-public-site.py
   scripts/check-run-report.py
+  scripts/run-classfile-compatibility.sh
   .github/workflows/compatibility.yml
+  .github/workflows/classfile-compatibility.yml
   .github/workflows/pages.yml
 )
 for path in "${required[@]}"; do
@@ -51,6 +55,7 @@ report_schema = json.loads(Path('schemas/bridge-run-report.schema.json').read_te
 page = Path('docs/index.html').read_text(encoding='utf-8')
 pages_workflow = Path('.github/workflows/pages.yml').read_text(encoding='utf-8')
 compatibility_workflow = Path('.github/workflows/compatibility.yml').read_text(encoding='utf-8')
+classfile_workflow = Path('.github/workflows/classfile-compatibility.yml').read_text(encoding='utf-8')
 
 assert contract['repository'] == 'SupraCraft/Bridge'
 assert contract['artifact']['group'] == 'io.github.supracraft.bridge'
@@ -66,9 +71,12 @@ assert contract['validation']['publication_model'] == 'build-once-promote-tested
 assert contract['validation']['public_site_builder'] == 'scripts/build-public-site.py'
 assert contract['validation']['public_site_check'] == 'scripts/check-public-site.py'
 assert contract['validation']['compatibility_workflow'] == '.github/workflows/compatibility.yml'
+assert contract['validation']['classfile_compatibility_workflow'] == '.github/workflows/classfile-compatibility.yml'
+assert contract['validation']['classfile_compatibility_runner'] == 'scripts/run-classfile-compatibility.sh'
 assert contract['validation']['run_report_validator'] == 'scripts/check-run-report.py'
 assert contract['compatibility']['contract'] == 'COMPATIBILITY.json'
-assert contract['compatibility']['workflow'] == '.github/workflows/compatibility.yml'
+assert contract['compatibility']['host_workflow'] == '.github/workflows/compatibility.yml'
+assert contract['compatibility']['classfile_workflow'] == '.github/workflows/classfile-compatibility.yml'
 assert contract['compatibility']['support_claims_require_evidence'] is True
 assert contract['compatibility']['one_bridge_build_per_bridge_version'] is True
 assert contract['provenance']['published_maven_bytes_are_tested_bytes'] is True
@@ -135,6 +143,12 @@ assert compatibility['asm']['single_version_required'] is True
 assert compatibility['maven']['canonical'] == contract['toolchain']['maven']
 assert compatibility['host_jvm']['pull_request_blocking'] == [21, 25, 26]
 assert compatibility['host_jvm']['advisory_early_access'] == ['27-ea']
+assert compatibility['class_files']['qualification_targets'] == [8, 11, 17, 21, 22, 23, 24, 25, 26]
+assert compatibility['class_files']['cross_host_transform'] == [21, 26]
+assert compatibility['class_files']['producer_jdk'] == 26
+assert compatibility['class_files']['workflow'] == '.github/workflows/classfile-compatibility.yml'
+assert compatibility['class_files']['runner'] == 'scripts/run-classfile-compatibility.sh'
+assert compatibility['class_files']['evidence_schema'] == 'bridge-classfile-matrix/1'
 
 for module in ('bridge-asm', 'bridge-plugin'):
     module_root = ET.parse(f'{module}/pom.xml').getroot()
@@ -151,6 +165,10 @@ for host in compatibility['host_jvm']['pull_request_blocking']:
     assert f"'{host}'" in compatibility_workflow, f'missing blocking host JDK {host} in compatibility workflow'
 assert '27-ea' in compatibility_workflow
 assert 'continue-on-error: true' in compatibility_workflow
+for host in compatibility['class_files']['cross_host_transform']:
+    assert f"'{host}'" in classfile_workflow, f'missing class-file host JDK {host}'
+assert 'bash scripts/run-classfile-compatibility.sh' in classfile_workflow
+assert 'bridge-classfile-compatibility-host-' in classfile_workflow
 
 wrapper = Path('.mvn/wrapper/maven-wrapper.properties').read_text(encoding='utf-8')
 match = re.search(r'apache-maven-([0-9.]+)-bin', wrapper)

@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
   "status": "candidate-policy",
   "repository": "SupraCraft/Bridge",
   "bridge_source_version": "0.1.0-dev",
@@ -11,10 +11,15 @@
     "advisory_early_access": ["27-ea"]
   },
   "class_files": {
-    "pr_representative_targets": [8, 11, 17, 21, 26],
-    "release_qualification_targets": [8, 11, 17, 21, 22, 23, 24, 25, 26],
+    "qualification_targets": [8, 11, 17, 21, 22, 23, 24, 25, 26],
+    "cross_host_transform": [21, 26],
+    "producer_jdk": 26,
+    "workflow": ".github/workflows/classfile-compatibility.yml",
+    "runner": "scripts/run-classfile-compatibility.sh",
+    "fixture": "compatibility/fixtures/classfile-project/CompatibilityFixture.java",
+    "evidence_schema": "bridge-classfile-matrix/1",
     "advisory_early_access": ["27-ea"],
-    "notes": "Class-file fixture coverage is phased into the 0.1.0 qualification plan; this file defines the target matrix and must not be read as proof that every target has already passed."
+    "notes": "The class-file workflow compiles one neutral fixture at every listed Java release, transforms each class file with the same Bridge source build under host JDK 21 and 26, preserves the class major, validates the Bridge run report, verifies with the JDK Class-File API, runs -Xverify:all, and executes the transformed class on JDK 26. A target is tested support only when the relevant qualification run has completed successfully."
   },
   "asm": {
     "version": "9.10.1",
@@ -33,9 +38,9 @@
     "reactor_verify": true,
     "dependency_convergence": true,
     "asm_verifier": "bridge-test/tests/bridge/VerificationTests.java",
-    "jdk_classfile_api_verifier": "scripts/VerifyClassFiles.java on JDK 25+ compatibility lanes",
-    "jvm_verify_all": "bridge-test Surefire executes with -Xverify:all",
-    "behavioral_execution": "existing bridge-test suite is required on every host lane; advertised-feature coverage expansion remains a 0.1.0 release gate"
+    "jdk_classfile_api_verifier": "scripts/VerifyClassFiles.java on JDK 25+ compatibility lanes and class-file qualification output",
+    "jvm_verify_all": "bridge-test Surefire and class-file execution use -Xverify:all",
+    "behavioral_execution": "bridge-test advertised-feature suite runs on host lanes; class-file qualification executes every transformed release fixture"
   },
   "consumer_qualification": {
     "required_for_stable": true,
