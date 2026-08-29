@@ -49,91 +49,83 @@ public final class BridgeMojo extends AbstractMojo {
     private static final String CANONICAL_GROUP = "io.github.supracraft.bridge";
     private static final String LEGACY_GROUP = "net.ME1312.ASM";
 
-    /**
-     * The maven repository system
-     */
+    /** The maven repository system */
     @Component
     private RepositorySystem system;
 
-    /**
-     * The maven artifact manager
-     */
+    /** The maven artifact manager */
     @Component
     private ArtifactHandlerManager manager;
 
-    /**
-     * The maven session
-     */
+    /** The maven session */
     @Component
     private MavenSession session;
 
-    /**
-     * The maven project
-     */
+    /** The maven project */
     @Component
     private MavenProject project;
 
-    /**
-     * The maven plugin execution
-     */
+    /** The maven plugin execution */
     @Component
     private MojoExecution execution;
 
-    /**
-     * Additional dependencies to add to the class hierarchy
-     */
+    /** Additional dependencies to add to the class hierarchy */
     @Parameter(property = "bridge.dependencies")
     private Dependency[] dependencies;
 
-    /**
-     * The top level input/output directory for classes
-     */
+    /** The top level input/output directory for classes */
     @Parameter(property = "bridge.classpath", defaultValue = "${project.build.outputDirectory}")
     private File classpath;
 
-    /**
-     * Include filters to apply when searching for classes to recompile
-     */
+    /** Include filters to apply when searching for classes to recompile */
     @Parameter(property = "bridge.includes", defaultValue = "**/*.class")
     private String[] includes;
 
-    /**
-     * Exclude filters to apply when searching for classes to recompile
-     */
+    /** Exclude filters to apply when searching for classes to recompile */
     @Parameter(property = "bridge.excludes")
     private String[] excludes;
 
-    /**
-     * Flags to apply when recompiling classes
-     */
+    /** Flags to apply when recompiling classes */
     @Parameter(property = "bridge.flags")
     private String[] flags;
 
+    /** Whether to emit the machine-readable Bridge run report. */
+    @Parameter(property = "bridge.report", defaultValue = "true")
+    private boolean reportEnabled;
+
+    /** Destination for the machine-readable Bridge run report. */
+    @Parameter(property = "bridge.reportFile", defaultValue = "${project.build.directory}/bridge/bridge-report.json")
+    private File reportFile;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        Log log = getLog();
+        final Log log = getLog();
+        final BridgeRunReport report = new BridgeRunReport(execution.getVersion());
+        final long runStarted = System.nanoTime();
+
         check: {
             String v1, v2 = project.getProperties().getProperty("bridge.version");
             for (Artifact artifact : project.getArtifacts()) {
                 if (!isBridgeApiArtifact(artifact)) continue;
                 if (v2 != null) {
                     if (!v2.equalsIgnoreCase(v1 = artifact.getVersion())) {
-                        log.warn("[BRIDGE-W001] The api version differs from ${bridge.version}: " + v1 + " != " + v2);
+                        warn(log, report, "BRIDGE-W001", "The api version differs from ${bridge.version}: " + v1 + " != " + v2);
                     }
                     break;
                 }
                 if (((v1 = execution.getVersion()) != (v2 = artifact.getVersion())) && (v1 == null || !v1.equalsIgnoreCase(v2))) {
-                    log.warn("[BRIDGE-W002] The plugin version differs from the api version: " + v1 + " != " + v2);
+                    warn(log, report, "BRIDGE-W002", "The plugin version differs from the api version: " + v1 + " != " + v2);
                 }
                 break check;
             }
             if (v2 != null && !v2.equalsIgnoreCase(v1 = execution.getVersion())) {
-                log.warn("[BRIDGE-W003] The plugin version differs from ${bridge.version}: " + v1 + " != " + v2);
+                warn(log, report, "BRIDGE-W003", "The plugin version differs from ${bridge.version}: " + v1 + " != " + v2);
             }
         }
+
         int flags = 0;
         boolean lazy = true;
-        for (String flag : this.flags) {
+        if (this.flags != null) for (String flag : this.flags) {
             switch (flag.replaceAll("[\\s\\-]", "_").toUpperCase(Locale.ROOT)) {
                 case "NO_DEBUG":
                     flags |= NO_NAMED_PARAMS | NO_NAMED_LOCALS | NO_SOURCE_EXT | NO_SOURCE_NAMES | NO_MODULE_VERSIONS | NO_LINE_NUMBERS;
@@ -172,12 +164,17 @@ public final class BridgeMojo extends AbstractMojo {
                 case "NO_RECOMPILE":
                 case "SKIP_COMPILE":
                 case "SKIP_RECOMPILE":
-                    log.warn("[BRIDGE-W004] Skipped previously defined recompilation goal");
+                    warn(log, report, "BRIDGE-W004", "Skipped previously defined recompilation goal");
+                    report.status = "skipped";
+                    report.totalNanos = System.nanoTime() - runStarted;
+                    logSummary(log, report);
+                    writeRunReport(report);
                     return;
                 default:
-                    log.warn("[BRIDGE-W005] Unknown recompilation flag: " + flag);
+                    warn(log, report, "BRIDGE-W005", "Unknown recompilation flag: " + flag);
             }
         }
+
         try {
             int length;
             TypeMap types = new TypeMap();
@@ -194,6 +191,11 @@ public final class BridgeMojo extends AbstractMojo {
             if (lazy || length == 0) for (int i = 0;;) {
                 if (i == length) {
                     log.info("Nothing to recompile");
+                    report.classesExamined = length;
+                    report.status = "no-op";
+                    report.totalNanos = System.nanoTime() - runStarted;
+                    logSummary(log, report);
+                    writeRunReport(report);
                     return;
                 }
                 final File file;
@@ -239,9 +241,7 @@ public final class BridgeMojo extends AbstractMojo {
                     }
                     continue;
                 }
-                if (log.isDebugEnabled()) {
-                    log.debug(" - " + file);
-                }
+                if (log.isDebugEnabled()) log.debug(" - " + file);
             }
 
             for (Artifact artifact : artifacts) {
@@ -256,12 +256,11 @@ public final class BridgeMojo extends AbstractMojo {
                     }
                     continue;
                 }
-                if (log.isDebugEnabled()) {
-                    log.debug(" - " + file + " (" + artifact.getScope() + ')');
-                }
+                if (log.isDebugEnabled()) log.debug(" - " + file + " (" + artifact.getScope() + ')');
             }
 
             scantime = System.nanoTime() - scantime;
+            report.hierarchyScanNanos = scantime;
             log.info("");
             log.info("Building bridges...");
             scan = new DirectoryScanner();
@@ -269,8 +268,10 @@ public final class BridgeMojo extends AbstractMojo {
             scan.setIncludes(this.includes);
             scan.setExcludes(this.excludes);
             scan.scan();
+            String[] targets = scan.getIncludedFiles();
+            report.classesExamined = targets.length;
             long comptime = System.nanoTime();
-            for (String path : scan.getIncludedFiles()) {
+            for (String path : targets) {
                 File in = new File(classpath, path);
                 if (in.exists()) {
                     ClassNode code;
@@ -281,7 +282,16 @@ public final class BridgeMojo extends AbstractMojo {
                         new ClassReader(is).accept(visitor = new BridgeVisitor(code = new ClassNode(), types), ClassReader.EXPAND_FRAMES);
                     }
                     int i;
-                    if (visitor.bridges != 0 || visitor.invocations != 0 || visitor.adjustments != 0 || visitor.removals != 0 || visitor.forks.size() != 1) {
+                    boolean changed = visitor.bridges != 0 || visitor.invocations != 0 || visitor.adjustments != 0 ||
+                            visitor.removals != 0 || visitor.forks.size() != 1;
+                    if (changed) {
+                        ++report.classesTransformed;
+                        report.bridges += visitor.bridges;
+                        report.invocations += visitor.invocations;
+                        report.adjustments += visitor.adjustments;
+                        report.removals += visitor.removals;
+                        report.forks += Math.max(0, visitor.forks.size() - 1);
+
                         StringBuilder msg = new StringBuilder().append(" -> ").append(
                                 ((i = path.lastIndexOf(visitor.name)) >= 0 && path.indexOf('/', i + visitor.name.length()) < 0)?
                                         path.substring(0, i) + visitor.name.replace('/', '.') : path
@@ -311,13 +321,51 @@ public final class BridgeMojo extends AbstractMojo {
             }
 
             comptime = System.nanoTime() - comptime;
+            report.transformNanos = comptime;
+            report.status = "success";
+            report.totalNanos = System.nanoTime() - runStarted;
             log.info("");
             log.info("Hierarchy resolved in " + humanize(scantime));
             log.info("Recompiled in " + humanize(comptime));
+            logSummary(log, report);
+            writeRunReport(report);
             classpath.setLastModified((Instant.now().getEpochSecond() * 1000) + 1000);
         } catch (Throwable e) {
+            if (e instanceof MojoExecutionException mojo && mojo.getMessage() != null && mojo.getMessage().startsWith("[BRIDGE-E002]")) {
+                throw mojo;
+            }
+            report.status = "failed";
+            report.totalNanos = System.nanoTime() - runStarted;
+            report.error("BRIDGE-E001", "Bridge transformation failed", e);
+            try {
+                writeRunReport(report);
+            } catch (MojoExecutionException reportFailure) {
+                e.addSuppressed(reportFailure);
+                log.error(reportFailure.getMessage(), reportFailure.getCause());
+            }
             throw new MojoExecutionException("[BRIDGE-E001] Bridge transformation failed", e);
         }
+    }
+
+    private void writeRunReport(BridgeRunReport report) throws MojoExecutionException {
+        if (!reportEnabled) return;
+        try {
+            report.write(reportFile.toPath());
+        } catch (Throwable e) {
+            throw new MojoExecutionException("[BRIDGE-E002] Failed to write Bridge run report", e);
+        }
+    }
+
+    private static void warn(Log log, BridgeRunReport report, String id, String message) {
+        log.warn('[' + id + "] " + message);
+        report.warning(id, message);
+    }
+
+    private static void logSummary(Log log, BridgeRunReport report) {
+        log.info("Bridge " + report.status + ": " + report.classesExamined + " classes examined; " +
+                report.classesTransformed + " transformed; " + report.bridges + " bridges; " +
+                report.invocations + " invocations; " + report.adjustments + " adjustments; " +
+                report.removals + " removals; " + report.forks + " forks; " + report.warningCount() + " warnings");
     }
 
     private static boolean isBridgeApiArtifact(Artifact artifact) {
