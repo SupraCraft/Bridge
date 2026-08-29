@@ -1,0 +1,8 @@
+{
+  "schema": "bridge-release-candidate/1",
+  "version": "0.1.0-rc.1",
+  "release_line": "0.1.0",
+  "target_branch": "master",
+  "publication": "github-packages",
+  "immutable": true
+}
