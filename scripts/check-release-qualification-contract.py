@@ -78,6 +78,8 @@ def main() -> int:
             "aggregator must not imply stable consumer qualification has passed")
     require("SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}" in workflow,
             "workflow must bind evidence to PR head SHA or pushed SHA")
+    require(workflow.count("ref: ${{ env.SOURCE_SHA }}") == 4,
+            "every release-qualification job must check out the exact SOURCE_SHA")
     require("if: always()" in workflow, "verdict must run and fail closed when prerequisite jobs fail")
     require("needs: [host-jvms, classfile-boundary, modern-boundary]" in workflow,
             "verdict prerequisites mismatch")
