@@ -64,12 +64,15 @@ jobs:
       - name: Build and verify reactor
         run: ./mvnw -B verify
 
+      - name: Resolve built project version
+        run: echo "BRIDGE_BUILD_VERSION=$(./mvnw -q -DforceStdout help:evaluate -Dexpression=project.version)" >> "$GITHUB_ENV"
+
       - name: Validate Bridge run report
         run: python3 scripts/check-run-report.py build/bridge-test/bridge/bridge-report.json
 
       - name: Verify emitted Java 21 bytecode baseline
         run: |
-          javap -verbose -classpath build/bridge/bridge-0.1.0-dev.jar bridge.Bridge > /tmp/bridge-javap.txt
+          javap -verbose -classpath "build/bridge/bridge-${BRIDGE_BUILD_VERSION}.jar" bridge.Bridge > /tmp/bridge-javap.txt
           grep -F 'major version: 65' /tmp/bridge-javap.txt
 
       - name: Verify transformed fixtures with JDK Class-File API
@@ -84,7 +87,7 @@ jobs:
 
       - name: Verify packaged multi-release fork
         run: |
-          jar='build/bridge-test/bridge-test-0.1.0-dev.jar'
+          jar="build/bridge-test/bridge-test-${BRIDGE_BUILD_VERSION}.jar"
           test -s "$jar"
           unzip -p "$jar" META-INF/MANIFEST.MF | tr -d '\r' > /tmp/bridge-test-manifest.mf
           grep -Fx 'Multi-Release: true' /tmp/bridge-test-manifest.mf
@@ -114,6 +117,9 @@ jobs:
       - name: Advisory reactor verification
         run: ./mvnw -B verify
 
+      - name: Resolve built project version
+        run: echo "BRIDGE_BUILD_VERSION=$(./mvnw -q -DforceStdout help:evaluate -Dexpression=project.version)" >> "$GITHUB_ENV"
+
       - name: Validate Bridge run report
         run: python3 scripts/check-run-report.py build/bridge-test/bridge/bridge-report.json
 
@@ -128,7 +134,7 @@ jobs:
 
       - name: Verify packaged multi-release fork
         run: |
-          jar='build/bridge-test/bridge-test-0.1.0-dev.jar'
+          jar="build/bridge-test/bridge-test-${BRIDGE_BUILD_VERSION}.jar"
           test -s "$jar"
           unzip -p "$jar" META-INF/MANIFEST.MF | tr -d '\r' > /tmp/bridge-test-manifest.mf
           grep -Fx 'Multi-Release: true' /tmp/bridge-test-manifest.mf
