@@ -5,6 +5,7 @@ on:
     branches: [master]
     paths:
       - 'PROJECT_CONTRACT.json'
+      - 'COMPATIBILITY.json'
       - 'GITHUB_METADATA.json'
       - 'docs/**'
       - 'scripts/build-public-site.py'
