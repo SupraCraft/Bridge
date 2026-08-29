@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.7.0",
+  "schema_version": "1.8.0",
   "repository": "SupraCraft/Bridge",
   "upstream_repository": "ME1312/Bridge",
   "role": "post-compile Maven transformation system and bytecode support library",
@@ -44,6 +44,7 @@
     "host_workflow": ".github/workflows/compatibility.yml",
     "classfile_workflow": ".github/workflows/classfile-compatibility.yml",
     "modern_bytecode_workflow": ".github/workflows/modern-bytecode-compatibility.yml",
+    "release_qualification_workflow": ".github/workflows/release-qualification.yml",
     "support_claims_require_evidence": true,
     "one_bridge_build_per_bridge_version": true
   },
@@ -60,6 +61,8 @@
     "classfile_compatibility_runner": "scripts/run-classfile-compatibility.sh",
     "modern_bytecode_compatibility_workflow": ".github/workflows/modern-bytecode-compatibility.yml",
     "modern_bytecode_compatibility_runner": "scripts/run-modern-bytecode-compatibility.sh",
+    "release_qualification_workflow": ".github/workflows/release-qualification.yml",
+    "release_qualification_aggregator": "scripts/aggregate-release-qualification.py",
     "run_report_validator": "scripts/check-run-report.py",
     "publication_model": "build-once-promote-tested-bytes"
   },
@@ -82,6 +85,7 @@
     "actions_build_evidence_days": 14,
     "actions_publication_handoff_days": 1,
     "release_assets": "durable-historical-provenance",
+    "release_qualification_evidence_days": 90,
     "maven_dev_package_cleanup": "reference-gated-and-deferred-until-stable-release-line"
   },
   "public_surface": {
@@ -103,7 +107,8 @@
     "upstream_repository": "ME1312/Bridge",
     "records_git_commit_ref_run": true,
     "fixed_archive_output_timestamp": true,
-    "published_maven_bytes_are_tested_bytes": true
+    "published_maven_bytes_are_tested_bytes": true,
+    "release_qualification_binds_source_sha": true
   },
   "documentation": {
     "human_entrypoint": "README.md",
