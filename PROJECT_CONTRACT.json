@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.6.0",
+  "schema_version": "1.7.0",
   "repository": "SupraCraft/Bridge",
   "upstream_repository": "ME1312/Bridge",
   "role": "post-compile Maven transformation system and bytecode support library",
@@ -43,6 +43,7 @@
     "contract": "COMPATIBILITY.json",
     "host_workflow": ".github/workflows/compatibility.yml",
     "classfile_workflow": ".github/workflows/classfile-compatibility.yml",
+    "modern_bytecode_workflow": ".github/workflows/modern-bytecode-compatibility.yml",
     "support_claims_require_evidence": true,
     "one_bridge_build_per_bridge_version": true
   },
@@ -57,6 +58,8 @@
     "compatibility_workflow": ".github/workflows/compatibility.yml",
     "classfile_compatibility_workflow": ".github/workflows/classfile-compatibility.yml",
     "classfile_compatibility_runner": "scripts/run-classfile-compatibility.sh",
+    "modern_bytecode_compatibility_workflow": ".github/workflows/modern-bytecode-compatibility.yml",
+    "modern_bytecode_compatibility_runner": "scripts/run-modern-bytecode-compatibility.sh",
     "run_report_validator": "scripts/check-run-report.py",
     "publication_model": "build-once-promote-tested-bytes"
   },
