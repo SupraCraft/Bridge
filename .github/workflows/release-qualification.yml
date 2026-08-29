@@ -2,21 +2,27 @@ name: release-qualification
 
 on:
   push:
-    branches: [main, master, 'release/**']
+    branches: [main, master, 'release/**', 'stable/**']
     paths:
       - 'pom.xml'
       - 'bridge*/**'
       - 'COMPATIBILITY.json'
       - 'PROJECT_CONTRACT.json'
       - 'RELEASE_CANDIDATE.json'
+      - 'STABLE_RELEASE.json'
+      - 'release-candidates/**'
       - 'compatibility/**'
       - 'schemas/release-candidate.schema.json'
+      - 'schemas/stable-release.schema.json'
       - 'scripts/VerifyClassFiles.java'
+      - 'scripts/check-documentation-contract.sh'
       - 'scripts/check-run-report.py'
       - 'scripts/run-classfile-compatibility.sh'
       - 'scripts/run-modern-bytecode-compatibility.sh'
       - 'scripts/aggregate-release-qualification.py'
       - 'scripts/validate-release-candidate.py'
+      - 'scripts/validate-stable-release.py'
+      - 'scripts/resolve-release-context.py'
       - 'scripts/assert-maven-version-absent.sh'
       - 'scripts/assert-maven-version-present.sh'
       - '.github/workflows/release-qualification.yml'
@@ -25,9 +31,13 @@ on:
     paths:
       - 'COMPATIBILITY.json'
       - 'PROJECT_CONTRACT.json'
+      - 'release-candidates/**'
       - 'schemas/release-candidate.schema.json'
+      - 'schemas/stable-release.schema.json'
       - 'scripts/aggregate-release-qualification.py'
       - 'scripts/validate-release-candidate.py'
+      - 'scripts/validate-stable-release.py'
+      - 'scripts/resolve-release-context.py'
       - 'scripts/assert-maven-version-absent.sh'
       - 'scripts/assert-maven-version-present.sh'
       - '.github/workflows/release-qualification.yml'
@@ -53,47 +63,45 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
-      is_candidate: ${{ steps.version.outputs.is_candidate }}
       release_line: ${{ steps.version.outputs.release_line }}
+      mode: ${{ steps.version.outputs.mode }}
+      is_candidate: ${{ steps.version.outputs.is_candidate }}
+      is_stable: ${{ steps.version.outputs.is_stable }}
+      is_release: ${{ steps.version.outputs.is_release }}
+      candidate: ${{ steps.version.outputs.candidate }}
+      candidate_source: ${{ steps.version.outputs.candidate_source }}
+      tag: ${{ steps.version.outputs.tag }}
     steps:
       - name: Checkout exact source
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           ref: ${{ env.SOURCE_SHA }}
 
-      - name: Resolve qualification version
+      - name: Resolve qualification context
         id: version
-        run: |
-          if [[ "$GITHUB_REF" == refs/heads/release/* ]]; then
-            python3 scripts/validate-release-candidate.py \
-              RELEASE_CANDIDATE.json \
-              --ref "$GITHUB_REF" \
-              --github-output "$GITHUB_OUTPUT"
-            echo 'is_candidate=true' >> "$GITHUB_OUTPUT"
-          else
-            python3 - "$GITHUB_OUTPUT" <<'PY'
-          import sys
-          import xml.etree.ElementTree as ET
-          root = ET.parse('pom.xml').getroot()
-          ns = {'m': 'http://maven.apache.org/POM/4.0.0'}
-          version = root.find('m:version', ns).text.strip()
-          line = version[:-4] if version.endswith('-dev') else version
-          with open(sys.argv[1], 'a', encoding='utf-8') as handle:
-              handle.write(f'version={version}\n')
-              handle.write(f'release_line={line}\n')
-              handle.write('is_candidate=false\n')
-          PY
-          fi
+        run: >-
+          python3 scripts/resolve-release-context.py
+          --ref "$GITHUB_REF"
+          --github-output "$GITHUB_OUTPUT"
 
-      - name: Require unused immutable candidate coordinate
-        if: steps.version.outputs.is_candidate == 'true'
+      - name: Require unused immutable release coordinate
+        if: steps.version.outputs.is_release == 'true'
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: bash scripts/assert-maven-version-absent.sh '${{ steps.version.outputs.version }}'
 
-  candidate-build:
-    name: release-candidate-tested-build
-    if: needs.context.outputs.is_candidate == 'true'
+      - name: Require unused stable tag
+        if: steps.version.outputs.is_stable == 'true'
+        run: |
+          tag='${{ steps.version.outputs.tag }}'
+          if git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
+            echo "Stable tag already exists: ${tag}" >&2
+            exit 1
+          fi
+
+  release-build:
+    name: tested-release-build
+    if: needs.context.outputs.is_release == 'true'
     needs: context
     runs-on: ubuntu-latest
     permissions:
@@ -116,20 +124,24 @@ jobs:
           ./mvnw --version | tee /tmp/maven-version.txt
           grep -F 'Apache Maven 3.9.16' /tmp/maven-version.txt
 
-      - name: Set exact candidate version
+      - name: Validate stable source surface
+        if: needs.context.outputs.is_stable == 'true'
+        run: bash scripts/check-documentation-contract.sh
+
+      - name: Set exact release version
         run: >-
           ./mvnw -B -q org.codehaus.mojo:versions-maven-plugin:2.21.0:set
           -DnewVersion='${{ needs.context.outputs.version }}'
           -DgenerateBackupPoms=false
 
-      - name: Build and test exact candidate
+      - name: Build and test exact release
         run: >-
           ./mvnw -B verify
           -Dbuild.commit=${SOURCE_SHA}
           -Dbuild.ref=${GITHUB_REF}
           -Dbuild.number=${GITHUB_RUN_NUMBER}
 
-      - name: Prove reproducible candidate JARs
+      - name: Prove reproducible release JARs
         run: >-
           bash scripts/verify-reproducible-build.sh
           '${{ needs.context.outputs.version }}'
@@ -137,25 +149,28 @@ jobs:
           '${GITHUB_REF}'
           '${GITHUB_RUN_NUMBER}'
 
-      - name: Verify candidate coordinates and provenance
+      - name: Verify release coordinates and provenance
         run: |
           version='${{ needs.context.outputs.version }}'
           test "$(./mvnw -q -DforceStdout help:evaluate -Dexpression=project.version)" = "$version"
-          unzip -p "build/bridge/bridge-${version}.jar" META-INF/MANIFEST.MF | tr -d '\r' > /tmp/bridge-candidate-manifest.mf
-          grep -Fx "Implementation-Version: ${version}" /tmp/bridge-candidate-manifest.mf
-          grep -Fx 'Implementation-Vendor: SupraCraft' /tmp/bridge-candidate-manifest.mf
-          grep -Fx 'Source-Repository: SupraCraft/Bridge' /tmp/bridge-candidate-manifest.mf
-          grep -Fx 'Upstream-Repository: ME1312/Bridge' /tmp/bridge-candidate-manifest.mf
+          unzip -p "build/bridge/bridge-${version}.jar" META-INF/MANIFEST.MF | tr -d '\r' > /tmp/bridge-release-manifest.mf
+          grep -Fx "Implementation-Version: ${version}" /tmp/bridge-release-manifest.mf
+          grep -Fx 'Implementation-Vendor: SupraCraft' /tmp/bridge-release-manifest.mf
+          grep -Fx 'Source-Repository: SupraCraft/Bridge' /tmp/bridge-release-manifest.mf
+          grep -Fx 'Upstream-Repository: ME1312/Bridge' /tmp/bridge-release-manifest.mf
+          grep -Fx "Build-Commit: ${SOURCE_SHA}" /tmp/bridge-release-manifest.mf
+          grep -Fx "Build-Ref: ${GITHUB_REF}" /tmp/bridge-release-manifest.mf
+          grep -Fx "Build-Number: ${GITHUB_RUN_NUMBER}" /tmp/bridge-release-manifest.mf
 
       - name: Verify tested-artifact promotion locally
         run: |
-          rm -rf /tmp/bridge-candidate-maven-repo
-          mkdir -p /tmp/bridge-candidate-maven-repo
+          rm -rf /tmp/bridge-release-maven-repo
+          mkdir -p /tmp/bridge-release-maven-repo
           bash scripts/deploy-tested-artifacts.sh \
             '${{ needs.context.outputs.version }}' \
             local \
-            'file:///tmp/bridge-candidate-maven-repo'
-          base='/tmp/bridge-candidate-maven-repo/io/github/supracraft/bridge'
+            'file:///tmp/bridge-release-maven-repo'
+          base='/tmp/bridge-release-maven-repo/io/github/supracraft/bridge'
           version='${{ needs.context.outputs.version }}'
           test -s "$base/bridge-parent/$version/bridge-parent-$version.pom"
           for artifact in bridge bridge-asm bridge-plugin bridge-test; do
@@ -165,15 +180,17 @@ jobs:
             cmp "$built" "$published"
           done
 
-      - name: Stage candidate standalone artifacts
+      - name: Stage standalone release artifacts
         run: bash scripts/stage-standalone-artifacts.sh '${{ needs.context.outputs.version }}'
 
-      - name: Record candidate build metadata
+      - name: Record release build metadata
         run: |
           cat > BUILD-METADATA.properties <<EOF
           group=io.github.supracraft.bridge
           version=${{ needs.context.outputs.version }}
-          release.candidate=true
+          release.kind=${{ needs.context.outputs.mode }}
+          release.candidate=${{ needs.context.outputs.is_candidate }}
+          release.stable=${{ needs.context.outputs.is_stable }}
           source.repository=SupraCraft/Bridge
           upstream.repository=ME1312/Bridge
           git.commit=${SOURCE_SHA}
@@ -184,10 +201,10 @@ jobs:
           EOF
           sha256sum dist/* BUILD-METADATA.properties REPRODUCIBILITY.properties > SHA256SUMS
 
-      - name: Upload tested candidate evidence
+      - name: Upload tested release evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: bridge-candidate-build-${{ needs.context.outputs.version }}
+          name: bridge-release-build-${{ needs.context.outputs.version }}
           path: |
             dist/*
             BUILD-METADATA.properties
@@ -196,10 +213,10 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
-      - name: Upload tested candidate Maven publication inputs
+      - name: Upload tested Maven publication inputs
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: bridge-candidate-publication-${{ needs.context.outputs.version }}
+          name: bridge-release-publication-${{ needs.context.outputs.version }}
           path: |
             pom.xml
             bridge-asm/pom.xml
@@ -234,8 +251,8 @@ jobs:
           java-version: ${{ matrix.java }}
           cache: maven
 
-      - name: Set exact candidate version
-        if: needs.context.outputs.is_candidate == 'true'
+      - name: Set exact release version
+        if: needs.context.outputs.is_release == 'true'
         run: >-
           ./mvnw -B -q org.codehaus.mojo:versions-maven-plugin:2.21.0:set
           -DnewVersion='${{ needs.context.outputs.version }}'
@@ -341,8 +358,8 @@ jobs:
           java-version: ${{ matrix.host }}
           cache: maven
 
-      - name: Set exact candidate version
-        if: needs.context.outputs.is_candidate == 'true'
+      - name: Set exact release version
+        if: needs.context.outputs.is_release == 'true'
         run: >-
           ./mvnw -B -q org.codehaus.mojo:versions-maven-plugin:2.21.0:set
           -DnewVersion='${{ needs.context.outputs.version }}'
@@ -391,8 +408,8 @@ jobs:
           java-version: ${{ matrix.host }}
           cache: maven
 
-      - name: Set exact candidate version
-        if: needs.context.outputs.is_candidate == 'true'
+      - name: Set exact release version
+        if: needs.context.outputs.is_release == 'true'
         run: >-
           ./mvnw -B -q org.codehaus.mojo:versions-maven-plugin:2.21.0:set
           -DnewVersion='${{ needs.context.outputs.version }}'
@@ -414,7 +431,7 @@ jobs:
   verdict:
     name: release-qualification-verdict
     if: always()
-    needs: [context, candidate-build, host-jvms, classfile-boundary, modern-boundary]
+    needs: [context, release-build, host-jvms, classfile-boundary, modern-boundary]
     runs-on: ubuntu-latest
     steps:
       - name: Require all blocking qualification jobs
@@ -423,10 +440,10 @@ jobs:
           test '${{ needs.host-jvms.result }}' = 'success'
           test '${{ needs.classfile-boundary.result }}' = 'success'
           test '${{ needs.modern-boundary.result }}' = 'success'
-          if [[ '${{ needs.context.outputs.is_candidate }}' == 'true' ]]; then
-            test '${{ needs.candidate-build.result }}' = 'success'
+          if [[ '${{ needs.context.outputs.is_release }}' == 'true' ]]; then
+            test '${{ needs.release-build.result }}' = 'success'
           else
-            test '${{ needs.candidate-build.result }}' = 'skipped'
+            test '${{ needs.release-build.result }}' = 'skipped'
           fi
 
       - name: Checkout exact source
@@ -470,7 +487,7 @@ jobs:
             echo
             echo '- Source SHA: `'$SOURCE_SHA'`'
             echo '- Bridge version: `${{ needs.context.outputs.version }}`'
-            echo '- Release candidate: `${{ needs.context.outputs.is_candidate }}`'
+            echo '- Mode: `${{ needs.context.outputs.mode }}`'
             echo '- Host JVMs: 21, 22, 23, 24, 25, 26'
             echo '- Input class files: Java 8, 11, 17, 21, 22, 23, 24, 25, 26'
             echo '- Boundary transform hosts: 21 and 26'
@@ -492,9 +509,9 @@ jobs:
       always() &&
       needs.context.outputs.is_candidate == 'true' &&
       needs.context.result == 'success' &&
-      needs.candidate-build.result == 'success' &&
+      needs.release-build.result == 'success' &&
       needs.verdict.result == 'success'
-    needs: [context, candidate-build, verdict]
+    needs: [context, release-build, verdict]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -521,13 +538,13 @@ jobs:
       - name: Download tested Maven publication inputs
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          name: bridge-candidate-publication-${{ needs.context.outputs.version }}
+          name: bridge-release-publication-${{ needs.context.outputs.version }}
           path: .
 
-      - name: Download tested candidate evidence
+      - name: Download tested release evidence
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          name: bridge-candidate-build-${{ needs.context.outputs.version }}
+          name: bridge-release-build-${{ needs.context.outputs.version }}
           path: candidate-release/evidence
 
       - name: Download qualification verdict
@@ -568,7 +585,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: bash scripts/assert-maven-version-present.sh '${{ needs.context.outputs.version }}'
 
-      - name: Record publication evidence
+      - name: Record candidate publication evidence
         run: |
           mkdir -p candidate-release
           python3 - "$SOURCE_SHA" '${{ needs.context.outputs.version }}' "$GITHUB_RUN_ID" > candidate-release/PUBLISHED.json <<'PY'
@@ -592,5 +609,153 @@ jobs:
         with:
           name: supracraft-bridge-${{ needs.context.outputs.version }}-release-candidate
           path: candidate-release/**
+          if-no-files-found: error
+          retention-days: 90
+
+  stable-publish:
+    name: publish-qualified-stable-release
+    if: >-
+      always() &&
+      needs.context.outputs.is_stable == 'true' &&
+      needs.context.result == 'success' &&
+      needs.release-build.result == 'success' &&
+      needs.verdict.result == 'success'
+    needs: [context, release-build, verdict]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+
+      - name: Set up JDK 21 for GitHub Packages
+        uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+          server-id: github
+
+      - name: Reconfirm stable coordinate and tag are unused
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          bash scripts/assert-maven-version-absent.sh '${{ needs.context.outputs.version }}'
+          tag='${{ needs.context.outputs.tag }}'
+          if git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
+            echo "Stable tag already exists: ${tag}" >&2
+            exit 1
+          fi
+
+      - name: Download tested Maven publication inputs
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: bridge-release-publication-${{ needs.context.outputs.version }}
+          path: .
+
+      - name: Download tested stable evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: bridge-release-build-${{ needs.context.outputs.version }}
+          path: stable-release/evidence
+
+      - name: Download qualification verdict
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: bridge-release-qualification
+          path: stable-release/qualification
+
+      - name: Verify stable publication inputs and qualified candidate binding
+        run: |
+          version='${{ needs.context.outputs.version }}'
+          test "$(./mvnw -q -DforceStdout help:evaluate -Dexpression=project.version)" = "$version"
+          for artifact in bridge bridge-asm bridge-plugin bridge-test; do
+            test -s "build/$artifact/$artifact-$version.jar"
+          done
+          python3 - "$SOURCE_SHA" "$version" '${{ needs.context.outputs.candidate }}' <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          source, version, candidate = sys.argv[1:]
+          verdict = json.loads(Path('stable-release/qualification/bridge-release-qualification.json').read_text())
+          assert verdict['status'] == 'pass'
+          assert verdict['sourceCommit'] == source
+          assert verdict['bridgeSourceVersion'] == version
+          manifest = json.loads(Path('STABLE_RELEASE.json').read_text())
+          assert manifest['version'] == version
+          assert manifest['candidate'] == candidate
+          status = json.loads(Path(manifest['candidate_status']).read_text())
+          assert status['status'] == 'published-qualified'
+          assert status['eligible_for_stable_promotion'] is True
+          assert status['consumer_qualification']['status'] == 'pass'
+          assert status['stable_promotion']['decision'] == 'eligible'
+          assert status['stable_promotion']['remaining_blockers'] == []
+          PY
+
+      - name: Publish exact tested stable bytes to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          bash scripts/deploy-tested-artifacts.sh
+          '${{ needs.context.outputs.version }}'
+          github
+          "https://maven.pkg.github.com/${BRIDGE_OWNER}/Bridge"
+
+      - name: Verify stable publication is visible
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bash scripts/assert-maven-version-present.sh '${{ needs.context.outputs.version }}'
+
+      - name: Create immutable stable tag
+        run: |
+          tag='${{ needs.context.outputs.tag }}'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git tag -a "$tag" "$SOURCE_SHA" -m "Bridge ${{ needs.context.outputs.version }}"
+          git push origin "refs/tags/${tag}"
+
+      - name: Record stable publication evidence
+        run: |
+          mkdir -p stable-release
+          python3 - "$SOURCE_SHA" '${{ needs.context.outputs.version }}' '${{ needs.context.outputs.tag }}' '${{ needs.context.outputs.candidate }}' "$GITHUB_RUN_ID" > stable-release/PUBLISHED.json <<'PY'
+          import json
+          import sys
+          print(json.dumps({
+              'schema': 'bridge-stable-release-publication/1',
+              'status': 'published',
+              'version': sys.argv[2],
+              'tag': sys.argv[3],
+              'qualifiedCandidate': sys.argv[4],
+              'sourceCommit': sys.argv[1],
+              'repository': 'SupraCraft/Bridge',
+              'channel': 'github-packages',
+              'workflowRunId': int(sys.argv[5]),
+              'immutable': True,
+          }, indent=2))
+          PY
+
+      - name: Publish GitHub release from tested evidence
+        uses: softprops/action-gh-release@7c4723f7a335432393329f8f1c564994ce50185d
+        with:
+          tag_name: ${{ needs.context.outputs.tag }}
+          name: Bridge ${{ needs.context.outputs.version }}
+          generate_release_notes: true
+          files: |
+            stable-release/evidence/dist/*
+            stable-release/evidence/BUILD-METADATA.properties
+            stable-release/evidence/REPRODUCIBILITY.properties
+            stable-release/evidence/SHA256SUMS
+            stable-release/qualification/bridge-release-qualification.json
+            stable-release/PUBLISHED.json
+          fail_on_unmatched_files: true
+
+      - name: Upload durable stable evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: supracraft-bridge-${{ needs.context.outputs.version }}-stable-release
+          path: stable-release/**
           if-no-files-found: error
           retention-days: 90
