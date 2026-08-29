@@ -1,0 +1,10 @@
+{
+  "schema": "bridge-stable-release/1",
+  "version": "0.1.0",
+  "tag": "v0.1.0",
+  "candidate": "0.1.0-rc.2",
+  "candidate_status": "release-candidates/0.1.0-rc.2.json",
+  "target_branch": "master",
+  "publication": "github-packages",
+  "immutable": true
+}

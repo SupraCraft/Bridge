@@ -1,8 +1,8 @@
 {
   "schema_version": "1.6.0",
-  "status": "candidate-policy",
+  "status": "stable-release",
   "repository": "SupraCraft/Bridge",
-  "bridge_source_version": "0.1.0-dev",
+  "bridge_source_version": "0.1.0",
   "support_claim_rule": "Only compatibility backed by completed CI/release qualification evidence may be presented as tested support.",
   "host_jvm": {
     "minimum": 21,

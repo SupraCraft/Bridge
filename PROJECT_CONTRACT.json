@@ -3,7 +3,7 @@
   "repository": "SupraCraft/Bridge",
   "upstream_repository": "ME1312/Bridge",
   "role": "post-compile Maven transformation system and bytecode support library",
-  "source_version": "0.1.0-dev",
+  "source_version": "0.1.0",
   "brand": {
     "organization": "SupraCraft",
     "contract_version": "0.1.0-candidate",
