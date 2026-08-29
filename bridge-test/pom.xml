@@ -48,6 +48,11 @@
                 <groupId>io.github.supracraft.bridge</groupId>
                 <artifactId>bridge-plugin</artifactId>
                 <version>${bridge.version}</version>
+                <configuration>
+                    <flags>
+                        <flag>NO_DEBUG</flag>
+                    </flags>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
