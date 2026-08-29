@@ -27,7 +27,7 @@ def replace_fact(page: str, pattern: str, value: str, label: str) -> str:
         count=1,
     )
     if count != 1:
-        raise RuntimeError(f"unable to render {label} from PROJECT_CONTRACT.json")
+        raise RuntimeError(f"unable to render {label} from repository contracts")
     return rendered
 
 
@@ -42,6 +42,7 @@ def main():
     shutil.copytree(DOCS, output)
 
     contract = load_json(ROOT / "PROJECT_CONTRACT.json")
+    compatibility = load_json(ROOT / "COMPATIBILITY.json")
     metadata = load_json(ROOT / "GITHUB_METADATA.json")
     brand = load_json(DOCS / "assets/brand/brand.json")
 
@@ -59,9 +60,22 @@ def main():
         str(contract["toolchain"]["java_bytecode_release"]),
         "Java bytecode release",
     )
+    page = replace_fact(
+        page,
+        r'(<span id="asm-version">)[^<]*(</span>)',
+        compatibility["asm"]["version"],
+        "ASM version",
+    )
+    page = replace_fact(
+        page,
+        r'(<span id="host-jvms">)[^<]*(</span>)',
+        ", ".join(str(value) for value in compatibility["host_jvm"]["pull_request_blocking"]),
+        "host JVM lanes",
+    )
     page_path.write_text(page, encoding="utf-8")
 
     write_json(output / "project.json", contract)
+    write_json(output / "compatibility.json", compatibility)
     write_json(output / "github.json", metadata)
     write_json(output / "brand.json", brand)
     write_json(
@@ -77,7 +91,7 @@ def main():
     )
 
     base = metadata["homepage"].rstrip("/")
-    llms = f"""# Bridge\n\nBridge is a post-compile Maven transformation system and Java bytecode support library.\n\nCanonical human entry point: {base}/\nRepository: https://github.com/{contract['repository']}\nUpstream: https://github.com/{contract['upstream_repository']}\nProject contract: {base}/project.json\nGitHub metadata: {base}/github.json\nBrand metadata: {base}/brand.json\nArtifact metadata: {base}/artifacts.json\nREADME: https://github.com/{contract['repository']}/blob/master/README.md\nAgent instructions: https://github.com/{contract['repository']}/blob/master/AGENTS.md\n\nPrefer the JSON endpoints and repository contracts over scraping presentation HTML.\n"""
+    llms = f"""# Bridge\n\nBridge is a post-compile Maven transformation system and Java bytecode support library.\n\nCanonical human entry point: {base}/\nRepository: https://github.com/{contract['repository']}\nUpstream: https://github.com/{contract['upstream_repository']}\nProject contract: {base}/project.json\nCompatibility policy: {base}/compatibility.json\nGitHub metadata: {base}/github.json\nBrand metadata: {base}/brand.json\nArtifact metadata: {base}/artifacts.json\nREADME: https://github.com/{contract['repository']}/blob/master/README.md\nAgent instructions: https://github.com/{contract['repository']}/blob/master/AGENTS.md\n\nPrefer the JSON endpoints and repository contracts over scraping presentation HTML. Compatibility policy defines intended qualification lanes; only completed CI/release evidence establishes tested support.\n"""
     (output / "llms.txt").write_text(llms, encoding="utf-8")
 
 
