@@ -46,10 +46,10 @@ See `ARTIFACT_IDENTITY.md`, `VERSIONING.md`, and `docs/artifact-consumption.md`.
 
 ## Version semantics
 
-- checked-in source line: `X.Y.Z-dev` (currently `0.1.0-dev`)
+- checked-in development source line: `X.Y.Z-dev` (currently `0.1.1-dev`)
 - normal CI publication: immutable `X.Y.Z-dev.<github-run-number>`
 - release candidate: `X.Y.Z-rc.N`
-- stable release/tag: `X.Y.Z` / `vX.Y.Z`
+- current stable release/tag: `0.1.0` / `v0.1.0`
 - Maven `SNAPSHOT` semantics are intentionally not used
 
 Consumers should pin one exact Bridge version across API/helper/plugin modules and record that coordinate in their own provenance.
@@ -95,7 +95,7 @@ https://maven.pkg.github.com/SupraCraft/Bridge
 
 GitHub Packages requires authentication. Use `GITHUB_TOKEN` in Actions or a PAT with `read:packages` locally.
 
-Use an **exact published version** in place of `<version>`:
+Use an **exact published version** in place of `<version>`; `0.1.0` is the current stable release:
 
 ```xml
 <properties>
@@ -164,7 +164,7 @@ The module probes mapped Minecraft classes through Bridge transformations. Runti
 
 ## Publication and provenance
 
-GitHub Actions builds/tests first, proves the published JARs reproducible, and locally proves the deploy path. For non-PR runs, the build job uploads the exact tested JARs and version-set POMs. The write-capable publish job downloads those inputs and deploys them; it does **not** rebuild the reactor before publication.
+GitHub Actions builds/tests first, proves the published JARs reproducible, and locally proves the deploy path. Development publication and the release-qualification path both promote exact tested Maven inputs rather than rebuilding in their write-capable jobs.
 
 This means the Maven package bytes are the tested bytes.
 
@@ -179,4 +179,4 @@ Build-Ref: <git-ref>
 Build-Number: <run-number>
 ```
 
-CI also retains SBOM, checksums, build metadata, and reproducibility evidence. Release/tag paths attach the already-tested standalone assets. GitHub Packages is the canonical Maven publication channel; GitHub Pages is the public documentation surface.
+CI also retains SBOM, checksums, build metadata, and reproducibility evidence. Stable release/tag paths attach the already-tested standalone assets and qualification evidence. GitHub Packages is the canonical Maven publication channel; GitHub Pages is the public documentation surface.
