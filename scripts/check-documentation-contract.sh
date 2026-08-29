@@ -12,16 +12,19 @@ required=(
   VERSIONING.md
   docs/DOCUMENTATION_POLICY.md
   docs/artifact-consumption.md
+  docs/diagnostics.md
   docs/index.html
   docs/roadmap/0.1.0-uplift.md
   docs/brand-guidelines.md
   docs/assets/brand/icon.svg
   docs/assets/brand/hero.svg
   docs/assets/brand/brand.json
+  schemas/bridge-run-report.schema.json
   bridge/resources/META-INF/supracraft/bridge/icon.svg
   scripts/apply-github-metadata.py
   scripts/build-public-site.py
   scripts/check-public-site.py
+  scripts/check-run-report.py
   .github/workflows/compatibility.yml
   .github/workflows/pages.yml
 )
@@ -44,6 +47,7 @@ compatibility = json.loads(Path('COMPATIBILITY.json').read_text(encoding='utf-8'
 profile = json.loads(Path('BRAND_PROFILE.json').read_text(encoding='utf-8'))
 metadata = json.loads(Path('GITHUB_METADATA.json').read_text(encoding='utf-8'))
 brand = json.loads(Path('docs/assets/brand/brand.json').read_text(encoding='utf-8'))
+report_schema = json.loads(Path('schemas/bridge-run-report.schema.json').read_text(encoding='utf-8'))
 page = Path('docs/index.html').read_text(encoding='utf-8')
 pages_workflow = Path('.github/workflows/pages.yml').read_text(encoding='utf-8')
 compatibility_workflow = Path('.github/workflows/compatibility.yml').read_text(encoding='utf-8')
@@ -62,6 +66,7 @@ assert contract['validation']['publication_model'] == 'build-once-promote-tested
 assert contract['validation']['public_site_builder'] == 'scripts/build-public-site.py'
 assert contract['validation']['public_site_check'] == 'scripts/check-public-site.py'
 assert contract['validation']['compatibility_workflow'] == '.github/workflows/compatibility.yml'
+assert contract['validation']['run_report_validator'] == 'scripts/check-run-report.py'
 assert contract['compatibility']['contract'] == 'COMPATIBILITY.json'
 assert contract['compatibility']['workflow'] == '.github/workflows/compatibility.yml'
 assert contract['compatibility']['support_claims_require_evidence'] is True
@@ -96,6 +101,20 @@ assert 'href="compatibility.json"' in page
 assert 'scripts/check-public-site.py' in pages_workflow
 assert '--site-dir build/public-site' in pages_workflow
 assert '--base-url "${{ steps.deployment.outputs.page_url }}"' in pages_workflow
+
+run_report = contract['diagnostics']['structured_run_report']
+assert contract['diagnostics']['human_transport'] == 'maven-log'
+assert contract['diagnostics']['stable_diagnostic_ids'] is True
+assert contract['diagnostics']['authoritative_failure_signal'] == 'maven-process-exit-code'
+assert run_report['enabled_by_default'] is True
+assert run_report['default_path'] == '${project.build.directory}/bridge/bridge-report.json'
+assert run_report['schema_id'] == 'bridge-run/1'
+assert run_report['schema'] == 'schemas/bridge-run-report.schema.json'
+assert run_report['validator'] == 'scripts/check-run-report.py'
+assert run_report['artifact_identity'] is False
+assert run_report['contains_absolute_environment_paths'] is False
+assert report_schema['properties']['schema']['const'] == run_report['schema_id']
+assert 'python3 scripts/check-run-report.py build/bridge-test/bridge/bridge-report.json' in compatibility_workflow
 
 root = ET.parse('pom.xml').getroot()
 ns = {'m': 'http://maven.apache.org/POM/4.0.0'}
@@ -158,6 +177,7 @@ active_docs=(
   BRAND_PROFILE.json
   GITHUB_METADATA.json
   docs/artifact-consumption.md
+  docs/diagnostics.md
   docs/index.html
   docs/roadmap/0.1.0-uplift.md
   docs/brand-guidelines.md
