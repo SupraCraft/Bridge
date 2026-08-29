@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.4.0",
+  "schema_version": "1.5.0",
   "repository": "SupraCraft/Bridge",
   "upstream_repository": "ME1312/Bridge",
   "role": "post-compile Maven transformation system and bytecode support library",
@@ -54,14 +54,23 @@
     "public_site_builder": "scripts/build-public-site.py",
     "public_site_check": "scripts/check-public-site.py",
     "compatibility_workflow": ".github/workflows/compatibility.yml",
+    "run_report_validator": "scripts/check-run-report.py",
     "publication_model": "build-once-promote-tested-bytes"
   },
   "diagnostics": {
-    "transport": "maven-log",
-    "stable_event_ids": true,
+    "human_transport": "maven-log",
+    "stable_diagnostic_ids": true,
     "event_catalog": "docs/diagnostics.md",
     "authoritative_failure_signal": "maven-process-exit-code",
-    "structured_run_report": "planned-before-0.1.0"
+    "structured_run_report": {
+      "enabled_by_default": true,
+      "default_path": "${project.build.directory}/bridge/bridge-report.json",
+      "schema_id": "bridge-run/1",
+      "schema": "schemas/bridge-run-report.schema.json",
+      "validator": "scripts/check-run-report.py",
+      "artifact_identity": false,
+      "contains_absolute_environment_paths": false
+    }
   },
   "retention": {
     "actions_build_evidence_days": 14,
@@ -104,6 +113,7 @@
     "github_metadata": "GITHUB_METADATA.json",
     "brand_profile": "BRAND_PROFILE.json",
     "pages_entrypoint": "docs/index.html",
-    "brand_guidelines": "docs/brand-guidelines.md"
+    "brand_guidelines": "docs/brand-guidelines.md",
+    "run_report_schema": "schemas/bridge-run-report.schema.json"
   }
 }
