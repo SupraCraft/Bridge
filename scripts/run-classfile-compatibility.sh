@@ -23,6 +23,8 @@ declare -A majors=(
 
 host_feature="$(java -XshowSettings:properties -version 2>&1 | awk -F= '/java.specification.version/{gsub(/[[:space:]]/, "", $2); print $2; exit}')"
 test -n "$host_feature"
+bridge_version="${BRIDGE_VERSION:-$(./mvnw -q -DforceStdout help:evaluate -Dexpression=project.version)}"
+test -n "$bridge_version"
 
 rm -rf "$input_root" "$result_root"
 mkdir -p "$input_root" "$result_root"
@@ -36,17 +38,17 @@ for release in "${releases[@]}"; do
   test "$actual" = "${majors[$release]}"
 done
 
-printf 'Installing Bridge 0.1.0-dev under host JDK %s\n' "$host_feature"
+printf 'Installing Bridge %s under host JDK %s\n' "$bridge_version" "$host_feature"
 ./mvnw -B -pl bridge-plugin -am install -DskipTests
 
 for release in "${releases[@]}"; do
-  printf 'Transforming Java %s class file (major %s) under host JDK %s\n' "$release" "${majors[$release]}" "$host_feature"
+  printf 'Transforming Java %s class file (major %s) with Bridge %s under host JDK %s\n' "$release" "${majors[$release]}" "$bridge_version" "$host_feature"
   rm -rf "$fixture_dir/target"
   mkdir -p "$fixture_dir/target/classes"
   cp -a "$input_root/$release/." "$fixture_dir/target/classes/"
 
   ./mvnw -B -f "$fixture_dir/pom.xml" \
-    io.github.supracraft.bridge:bridge-plugin:0.1.0-dev:bridge \
+    "io.github.supracraft.bridge:bridge-plugin:${bridge_version}:bridge" \
     -Dbridge.flags=FORCE_COMPILE
 
   python3 scripts/check-run-report.py "$fixture_dir/target/bridge/bridge-report.json"
@@ -59,17 +61,18 @@ for release in "${releases[@]}"; do
   test "$output" = 'compatibility-ok'
 done
 
-python3 - "$host_feature" "$result_root/host-$host_feature.json" <<'PY'
+python3 - "$host_feature" "$bridge_version" "$result_root/host-$host_feature.json" <<'PY'
 import json
 import pathlib
 import sys
 
 host = int(sys.argv[1])
-out = pathlib.Path(sys.argv[2])
+bridge_version = sys.argv[2]
+out = pathlib.Path(sys.argv[3])
 major = {8: 52, 11: 55, 17: 61, 21: 65, 22: 66, 23: 67, 24: 68, 25: 69, 26: 70}
 report = {
     "schema": "bridge-classfile-matrix/1",
-    "bridgeVersion": "0.1.0-dev",
+    "bridgeVersion": bridge_version,
     "hostJavaFeature": host,
     "producerJavaFeature": 26,
     "targets": [
@@ -89,4 +92,4 @@ out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 print(f"Wrote {out}")
 PY
 
-printf 'Bridge class-file compatibility OK under host JDK %s\n' "$host_feature"
+printf 'Bridge %s class-file compatibility OK under host JDK %s\n' "$bridge_version" "$host_feature"
