@@ -42,7 +42,8 @@ def shell(title, description, body, route, base, canonical_base):
     ]
     links = []
     for path, label in nav:
-        current = ' aria-current="page"' if route == path else ""
+        is_current = route == path or (path == "releases/" and route.startswith("releases/"))
+        current = ' aria-current="page"' if is_current else ""
         links.append(f'<a href="{html.escape(join_url(base, path))}"{current}>{html.escape(label)}</a>')
     brand_current = ' aria-current="page"' if route == "" else ""
     canonical = join_url(canonical_base, route)
