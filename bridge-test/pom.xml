@@ -69,6 +69,7 @@
                     <argLine>-Xverify:all</argLine>
                     <systemPropertyVariables>
                         <bridge.test.outputDirectory>${project.build.outputDirectory}</bridge.test.outputDirectory>
+                        <bridge.test.reportFile>${project.build.directory}/bridge/bridge-report.json</bridge.test.reportFile>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
