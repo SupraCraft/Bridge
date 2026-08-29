@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.8.0",
+  "schema_version": "1.9.0",
   "repository": "SupraCraft/Bridge",
   "upstream_repository": "ME1312/Bridge",
   "role": "post-compile Maven transformation system and bytecode support library",
@@ -28,6 +28,9 @@
     "development_source": "X.Y.Z-dev",
     "development_ci": "X.Y.Z-dev.<github-run-number>",
     "release_candidate": "X.Y.Z-rc.N",
+    "release_candidate_branch": "release/X.Y.Z-rc.N",
+    "release_candidate_manifest": "RELEASE_CANDIDATE.json",
+    "release_candidate_publication": "github-packages-after-qualified-tested-build",
     "release": "X.Y.Z",
     "release_tag": "vX.Y.Z",
     "maven_snapshot_semantics": false
@@ -63,6 +66,9 @@
     "modern_bytecode_compatibility_runner": "scripts/run-modern-bytecode-compatibility.sh",
     "release_qualification_workflow": ".github/workflows/release-qualification.yml",
     "release_qualification_aggregator": "scripts/aggregate-release-qualification.py",
+    "release_candidate_validator": "scripts/validate-release-candidate.py",
+    "release_candidate_coordinate_absence_check": "scripts/assert-maven-version-absent.sh",
+    "release_candidate_coordinate_presence_check": "scripts/assert-maven-version-present.sh",
     "run_report_validator": "scripts/check-run-report.py",
     "publication_model": "build-once-promote-tested-bytes"
   },
@@ -86,6 +92,7 @@
     "actions_publication_handoff_days": 1,
     "release_assets": "durable-historical-provenance",
     "release_qualification_evidence_days": 90,
+    "release_candidate_evidence_days": 90,
     "maven_dev_package_cleanup": "reference-gated-and-deferred-until-stable-release-line"
   },
   "public_surface": {
@@ -108,7 +115,10 @@
     "records_git_commit_ref_run": true,
     "fixed_archive_output_timestamp": true,
     "published_maven_bytes_are_tested_bytes": true,
-    "release_qualification_binds_source_sha": true
+    "release_qualification_binds_source_sha": true,
+    "release_qualification_binds_bridge_version": true,
+    "release_candidate_coordinates_immutable": true,
+    "release_candidate_publish_rebuilds": false
   },
   "documentation": {
     "human_entrypoint": "README.md",
@@ -120,6 +130,7 @@
     "diagnostics": "docs/diagnostics.md",
     "artifact_retention": "docs/artifact-retention.md",
     "compatibility": "COMPATIBILITY.json",
+    "release_candidates": "docs/release-candidates.md",
     "uplift_roadmap": "docs/roadmap/0.1.0-uplift.md",
     "github_metadata": "GITHUB_METADATA.json",
     "brand_profile": "BRAND_PROFILE.json",
