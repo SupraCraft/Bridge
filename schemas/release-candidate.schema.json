@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://supracraft.github.io/Bridge/schemas/release-candidate.schema.json",
+  "title": "Bridge release candidate manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "version",
+    "release_line",
+    "target_branch",
+    "publication",
+    "immutable"
+  ],
+  "properties": {
+    "schema": {
+      "const": "bridge-release-candidate/1"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+-rc\\.[1-9][0-9]*$"
+    },
+    "release_line": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "target_branch": {
+      "const": "master"
+    },
+    "publication": {
+      "const": "github-packages"
+    },
+    "immutable": {
+      "const": true
+    }
+  }
+}
