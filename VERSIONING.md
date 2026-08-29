@@ -28,7 +28,7 @@ Maven `SNAPSHOT` semantics are intentionally not used. Historical names such as 
 
 ## CI development versions
 
-Ordinary non-tagged CI reads the source POM version and appends the GitHub Actions run number:
+Ordinary non-tagged build CI reads the source POM version and appends the GitHub Actions run number:
 
 ```text
 X.Y.Z-dev.<run-number>
@@ -36,11 +36,37 @@ X.Y.Z-dev.<run-number>
 
 Each coordinate is immutable and unique. The JAR manifest records the full source commit, ref, and run number so the Maven coordinate does not need to encode source provenance.
 
-## Release candidates and releases
+## Release candidates
 
-Release candidates use immutable `X.Y.Z-rc.N` versions. Stable release tags use `vX.Y.Z`, and release publication uses `X.Y.Z`.
+Release candidates use immutable `X.Y.Z-rc.N` versions. The source POM remains `X.Y.Z-dev`; release qualification changes the version only inside isolated Actions workspaces. That prevents a release-preparation commit from changing the continuing development identity.
 
-Consumers should use one exact Bridge version across the related API/helper/plugin modules for a build. Development automation may select a newer immutable `-dev.N` build, but the produced consumer must record the resolved exact version.
+A candidate is initiated from a branch named:
+
+```text
+release/X.Y.Z-rc.N
+```
+
+The branch carries `RELEASE_CANDIDATE.json`, which binds the candidate version, release line, target branch, publication channel, and immutability requirement. The branch name and manifest must agree.
+
+The existing release-qualification workflow tests the exact candidate version against the exact source SHA. It covers host JDKs 21 through 26, the Java 8 through 26 input class-file envelope on boundary hosts, the risk-focused modern-bytecode fixtures, structured diagnostics, independent class verification, behavioral execution, and packaged multi-release behavior.
+
+A separate candidate-build job produces the exact Maven publication inputs and proves their reproducibility. The write-capable publication job runs only after both the tested build and aggregate qualification verdict pass. It downloads and promotes those already-tested bytes; it does not rebuild or re-version Bridge.
+
+Before qualification and immediately before publication, GitHub Packages metadata is checked to ensure the candidate coordinate does not already exist. After publication, every published module is checked for that exact version. A published or partially published candidate is never overwritten. If a correction is required after any candidate coordinate becomes visible, use the next candidate number.
+
+See `docs/release-candidates.md` for the operational contract.
+
+## Stable releases
+
+Stable release publication uses `X.Y.Z`; stable release tags use:
+
+```text
+vX.Y.Z
+```
+
+A successful Bridge release qualification is necessary but not sufficient for stable promotion. `SupraCraft/VanillaCord` is the reference downstream consumer and must qualify against the exact candidate coordinate before the corresponding stable Bridge version is promoted.
+
+Consumers should use one exact Bridge version across the related API/helper/plugin modules for a build. Development automation may select a newer immutable `-dev.N` build, but release qualification and produced consumers must record the exact resolved version.
 
 ## Provenance
 
@@ -55,13 +81,13 @@ Every Bridge JAR contains:
 - `Source-Repository: SupraCraft/Bridge`
 - `Upstream-Repository: ME1312/Bridge`
 
-CI also emits the aggregate CycloneDX SBOM, `BUILD-METADATA.properties`, `REPRODUCIBILITY.properties`, and `SHA256SUMS` with the standalone artifact bundle.
+CI also emits the aggregate CycloneDX SBOM, `BUILD-METADATA.properties`, `REPRODUCIBILITY.properties`, and `SHA256SUMS` with the standalone artifact bundle. Release qualification evidence binds both the exact source SHA and exact Bridge version.
 
 ## Reproducibility and publication
 
 The build uses a fixed `project.build.outputTimestamp` and proves the published Bridge JARs byte-for-byte reproducible under identical explicit inputs.
 
-Publication is build-once/promote-tested-bytes: the build job uploads the exact tested JARs and version-set POMs; the write-capable publication job deploys those files without rebuilding the reactor. This is part of the release contract, not an implementation detail.
+Publication is build-once/promote-tested-bytes: a non-write-capable build job creates and tests the version-set JARs and POMs; the write-capable publication job deploys those files without rebuilding the reactor. This is part of the release contract, not an implementation detail.
 
 ## Compatibility policy
 
