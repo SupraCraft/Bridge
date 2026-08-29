@@ -40,7 +40,7 @@
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm-commons</artifactId>
-            <version>9.7</version>
+            <version>${asm.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

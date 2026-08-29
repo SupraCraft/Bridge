@@ -1,0 +1,91 @@
+name: compatibility
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'pom.xml'
+      - 'bridge*/**'
+      - 'COMPATIBILITY.json'
+      - 'scripts/**'
+      - '.mvn/wrapper/**'
+      - 'mvnw'
+      - 'mvnw.cmd'
+      - '.github/workflows/compatibility.yml'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'pom.xml'
+      - 'bridge*/**'
+      - 'COMPATIBILITY.json'
+      - 'scripts/**'
+      - '.mvn/wrapper/**'
+      - 'mvnw'
+      - 'mvnw.cmd'
+      - '.github/workflows/compatibility.yml'
+  schedule:
+    - cron: '37 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: compatibility-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  supported-hosts:
+    name: host-jdk-${{ matrix.java }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: ['21', '25', '26']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+
+      - name: Record toolchain
+        run: |
+          java --version
+          ./mvnw --version
+          test "$(./mvnw -q -DforceStdout help:evaluate -Dexpression=asm.version)" = '9.10.1'
+
+      - name: Build and verify reactor
+        run: ./mvnw -B verify
+
+      - name: Verify emitted Java 21 bytecode baseline
+        run: |
+          javap -verbose -classpath build/bridge/bridge-0.1.0-dev.jar bridge.Bridge > /tmp/bridge-javap.txt
+          grep -F 'major version: 65' /tmp/bridge-javap.txt
+
+  next-jdk-advisory:
+    name: host-jdk-27-ea-advisory
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+
+      - name: Set up JDK 27 RC from jdk.java.net
+        uses: oracle-actions/setup-java@155c7e556815196c3131aa35c56caedd0c912052
+        with:
+          website: jdk.java.net
+          release: 27
+          version: latest
+
+      - name: Record advisory toolchain
+        run: |
+          java --version
+          ./mvnw --version
+
+      - name: Advisory reactor verification
+        run: ./mvnw -B verify

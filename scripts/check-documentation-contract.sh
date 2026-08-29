@@ -5,6 +5,7 @@ required=(
   README.md
   AGENTS.md
   PROJECT_CONTRACT.json
+  COMPATIBILITY.json
   BRAND_PROFILE.json
   GITHUB_METADATA.json
   ARTIFACT_IDENTITY.md
@@ -12,6 +13,7 @@ required=(
   docs/DOCUMENTATION_POLICY.md
   docs/artifact-consumption.md
   docs/index.html
+  docs/roadmap/0.1.0-uplift.md
   docs/brand-guidelines.md
   docs/assets/brand/icon.svg
   docs/assets/brand/hero.svg
@@ -20,6 +22,7 @@ required=(
   scripts/apply-github-metadata.py
   scripts/build-public-site.py
   scripts/check-public-site.py
+  .github/workflows/compatibility.yml
   .github/workflows/pages.yml
 )
 for path in "${required[@]}"; do
@@ -37,11 +40,13 @@ from pathlib import Path
 import subprocess
 
 contract = json.loads(Path('PROJECT_CONTRACT.json').read_text(encoding='utf-8'))
+compatibility = json.loads(Path('COMPATIBILITY.json').read_text(encoding='utf-8'))
 profile = json.loads(Path('BRAND_PROFILE.json').read_text(encoding='utf-8'))
 metadata = json.loads(Path('GITHUB_METADATA.json').read_text(encoding='utf-8'))
 brand = json.loads(Path('docs/assets/brand/brand.json').read_text(encoding='utf-8'))
 page = Path('docs/index.html').read_text(encoding='utf-8')
 pages_workflow = Path('.github/workflows/pages.yml').read_text(encoding='utf-8')
+compatibility_workflow = Path('.github/workflows/compatibility.yml').read_text(encoding='utf-8')
 
 assert contract['repository'] == 'SupraCraft/Bridge'
 assert contract['artifact']['group'] == 'io.github.supracraft.bridge'
@@ -56,6 +61,11 @@ assert profile['packaged_resources']['source_path'] == 'bridge/resources/META-IN
 assert contract['validation']['publication_model'] == 'build-once-promote-tested-bytes'
 assert contract['validation']['public_site_builder'] == 'scripts/build-public-site.py'
 assert contract['validation']['public_site_check'] == 'scripts/check-public-site.py'
+assert contract['validation']['compatibility_workflow'] == '.github/workflows/compatibility.yml'
+assert contract['compatibility']['contract'] == 'COMPATIBILITY.json'
+assert contract['compatibility']['workflow'] == '.github/workflows/compatibility.yml'
+assert contract['compatibility']['support_claims_require_evidence'] is True
+assert contract['compatibility']['one_bridge_build_per_bridge_version'] is True
 assert contract['provenance']['published_maven_bytes_are_tested_bytes'] is True
 assert contract['public_surface']['github_metadata'] == 'GITHUB_METADATA.json'
 assert contract['public_surface']['metadata_apply'] == 'scripts/apply-github-metadata.py'
@@ -65,6 +75,7 @@ assert contract['public_surface']['pages_workflow'] == '.github/workflows/pages.
 assert contract['public_surface']['site_builder'] == 'scripts/build-public-site.py'
 assert contract['public_surface']['brand_manifest'] == 'docs/assets/brand/brand.json'
 assert contract['public_surface']['pages_url'] == metadata['homepage'] == metadata['pages']['url']
+assert 'compatibility.json' in contract['public_surface']['machine_endpoints']
 assert metadata['repository'] == contract['repository']
 assert metadata['upstream_repository'] == contract['upstream_repository']
 assert metadata['pages']['expected_enabled'] is True
@@ -81,6 +92,7 @@ assert 'io.github.supracraft.bridge' in page
 assert metadata['homepage'] in page
 assert metadata['description'] in page
 assert 'Minecraft' not in brand['identity']
+assert 'href="compatibility.json"' in page
 assert 'scripts/check-public-site.py' in pages_workflow
 assert '--site-dir build/public-site' in pages_workflow
 assert '--base-url "${{ steps.deployment.outputs.page_url }}"' in pages_workflow
@@ -95,6 +107,31 @@ def text(path):
 assert contract['source_version'] == text('m:version')
 assert contract['artifact']['group'] == text('m:groupId')
 assert int(contract['toolchain']['java_bytecode_release']) == int(text('m:properties/m:maven.compiler.release'))
+assert contract['toolchain']['asm'] == text('m:properties/m:asm.version')
+assert compatibility['repository'] == contract['repository']
+assert compatibility['bridge_source_version'] == contract['source_version']
+assert compatibility['host_jvm']['minimum'] == contract['toolchain']['java_bytecode_release']
+assert compatibility['asm']['version'] == contract['toolchain']['asm']
+assert compatibility['asm']['single_version_required'] is True
+assert compatibility['maven']['canonical'] == contract['toolchain']['maven']
+assert compatibility['host_jvm']['pull_request_blocking'] == [21, 25, 26]
+assert compatibility['host_jvm']['advisory_early_access'] == ['27-ea']
+
+for module in ('bridge-asm', 'bridge-plugin'):
+    module_root = ET.parse(f'{module}/pom.xml').getroot()
+    versions = []
+    for dep in module_root.findall('m:dependencies/m:dependency', ns):
+        group = dep.find('m:groupId', ns)
+        version = dep.find('m:version', ns)
+        if group is not None and group.text.strip() == 'org.ow2.asm':
+            assert version is not None and version.text.strip() == '${asm.version}', f'{module} must use parent asm.version'
+            versions.append(version.text.strip())
+    assert versions, f'{module} must declare an ASM dependency'
+
+for host in compatibility['host_jvm']['pull_request_blocking']:
+    assert f"'{host}'" in compatibility_workflow, f'missing blocking host JDK {host} in compatibility workflow'
+assert '27-ea' in compatibility_workflow
+assert 'continue-on-error: true' in compatibility_workflow
 
 wrapper = Path('.mvn/wrapper/maven-wrapper.properties').read_text(encoding='utf-8')
 match = re.search(r'apache-maven-([0-9.]+)-bin', wrapper)
@@ -108,6 +145,7 @@ with tempfile.TemporaryDirectory() as tmp:
     for name in contract['public_surface']['machine_endpoints']:
         assert (out / name).is_file(), f'missing generated endpoint: {name}'
     assert json.loads((out / 'project.json').read_text()) == contract
+    assert json.loads((out / 'compatibility.json').read_text()) == compatibility
     assert json.loads((out / 'github.json').read_text()) == metadata
     assert json.loads((out / 'brand.json').read_text()) == brand
 PY
@@ -116,10 +154,12 @@ active_docs=(
   README.md
   AGENTS.md
   PROJECT_CONTRACT.json
+  COMPATIBILITY.json
   BRAND_PROFILE.json
   GITHUB_METADATA.json
   docs/artifact-consumption.md
   docs/index.html
+  docs/roadmap/0.1.0-uplift.md
   docs/brand-guidelines.md
 )
 

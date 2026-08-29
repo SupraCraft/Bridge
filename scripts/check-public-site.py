@@ -52,7 +52,7 @@ class SiteReader:
             return response.read().decode("utf-8")
 
 
-def validate_site(reader, contract, metadata, expected_brand):
+def validate_site(reader, contract, compatibility, metadata, expected_brand):
     page = reader.read_text("index.html")
     assert '<html lang="en">' in page
     assert '<meta name="viewport"' in page
@@ -84,15 +84,17 @@ def validate_site(reader, contract, metadata, expected_brand):
     assert artifacts["provenance"] == contract["provenance"]
 
     if "compatibility.json" in endpoints:
-        compatibility = json.loads(reader.read_text("compatibility.json"))
-        assert compatibility["repository"] == contract["repository"]
-        assert compatibility["tiers"] == contract["validation"]["compatibility_tiers"]
+        published_compatibility = json.loads(reader.read_text("compatibility.json"))
+        assert published_compatibility == compatibility
+        assert published_compatibility["repository"] == contract["repository"]
+        assert published_compatibility["asm"]["version"] == contract["toolchain"]["asm"]
 
     llms = reader.read_text("llms.txt")
     base = metadata["homepage"].rstrip("/")
     assert f"Canonical human entry point: {base}/" in llms
     assert f"Repository: https://github.com/{contract['repository']}" in llms
     assert f"Upstream: https://github.com/{contract['upstream_repository']}" in llms
+    assert f"Compatibility policy: {base}/compatibility.json" in llms
 
     if 'id="source-version"' in page:
         assert (
@@ -104,6 +106,11 @@ def validate_site(reader, contract, metadata, expected_brand):
             f'id="java-release">{contract["toolchain"]["java_bytecode_release"]}</span>' in page
         ), "rendered Java release does not match PROJECT_CONTRACT.json"
 
+    if 'id="asm-version"' in page:
+        assert (
+            f'id="asm-version">{compatibility["asm"]["version"]}</span>' in page
+        ), "rendered ASM version does not match COMPATIBILITY.json"
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -113,12 +120,13 @@ def main():
     args = parser.parse_args()
 
     contract = load_json(ROOT / "PROJECT_CONTRACT.json")
+    compatibility = load_json(ROOT / "COMPATIBILITY.json")
     metadata = load_json(ROOT / "GITHUB_METADATA.json")
     expected_brand = load_json(ROOT / "docs/assets/brand/brand.json")
     reader = SiteReader(site_dir=args.site_dir, base_url=args.base_url)
 
     if args.site_dir:
-        validate_site(reader, contract, metadata, expected_brand)
+        validate_site(reader, contract, compatibility, metadata, expected_brand)
     else:
         last_error = None
         retryable = (
@@ -132,7 +140,7 @@ def main():
         for attempt in range(1, REMOTE_ATTEMPTS + 1):
             reader.begin_attempt(attempt)
             try:
-                validate_site(reader, contract, metadata, expected_brand)
+                validate_site(reader, contract, compatibility, metadata, expected_brand)
                 break
             except retryable as exc:
                 last_error = exc
