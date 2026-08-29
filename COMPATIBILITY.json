@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.5.1",
+  "schema_version": "1.6.0",
   "status": "candidate-policy",
   "repository": "SupraCraft/Bridge",
   "bridge_source_version": "0.1.0-dev",
@@ -57,10 +57,14 @@
     "reproducibility_evidence_consistency_required": true,
     "release_candidate_trigger": "release/X.Y.Z-rc.N + RELEASE_CANDIDATE.json",
     "release_candidate_publication": "github-packages-after-qualified-tested-build",
+    "stable_release_trigger": "stable/X.Y.Z + STABLE_RELEASE.json",
+    "stable_release_publication": "github-packages-and-github-release-after-qualified-tested-build",
+    "stable_release_requires_published_qualified_candidate": true,
+    "stable_release_source_version_matches_coordinate": true,
     "next_jdk_advisory": 27,
     "consumer_qualification_required_separately": true,
     "consumer": "SupraCraft/VanillaCord",
-    "notes": "A release-qualification PASS is tied to the exact source SHA and exact Bridge version and aggregates the full supported host-JVM sweep with class-file and modern-bytecode boundary evidence. Release-candidate evidence must also be internally consistent: retained build/reproducibility metadata and JAR provenance must describe the same source inputs without unresolved placeholders. Release candidates are immutable coordinates and are never overwritten. Stable release still requires an exact-version downstream VanillaCord qualification."
+    "notes": "A release-qualification PASS is tied to the exact source SHA and exact Bridge version and aggregates the full supported host-JVM sweep with class-file and modern-bytecode boundary evidence. Release candidates are immutable coordinates and are never overwritten. Stable releases use the same matrix, require a published-qualified candidate whose exact-version VanillaCord consumer gate passed, require a stable/X.Y.Z source branch whose checked-in POM is X.Y.Z, and publish/tag only the exact tested stable handoff."
   },
   "asm": {
     "version": "9.10.1",
