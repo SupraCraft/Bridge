@@ -6,10 +6,27 @@ if [[ $# -ne 4 ]]; then
   exit 2
 fi
 
+resolve_ci_value() {
+  case "$1" in
+    '${SOURCE_SHA}') printf '%s' "${SOURCE_SHA:?SOURCE_SHA is required}" ;;
+    '${SOURCE_REF}') printf '%s' "${SOURCE_REF:?SOURCE_REF is required}" ;;
+    '${GITHUB_REF}') printf '%s' "${GITHUB_REF:?GITHUB_REF is required}" ;;
+    '${GITHUB_RUN_NUMBER}') printf '%s' "${GITHUB_RUN_NUMBER:?GITHUB_RUN_NUMBER is required}" ;;
+    *) printf '%s' "$1" ;;
+  esac
+}
+
 VERSION="$1"
-BUILD_COMMIT="$2"
-BUILD_REF="$3"
-BUILD_NUMBER="$4"
+BUILD_COMMIT="$(resolve_ci_value "$2")"
+BUILD_REF="$(resolve_ci_value "$3")"
+BUILD_NUMBER="$(resolve_ci_value "$4")"
+
+for value in "$BUILD_COMMIT" "$BUILD_REF" "$BUILD_NUMBER"; do
+  if [[ "$value" == *'${'* ]]; then
+    echo "Unresolved provenance placeholder: $value" >&2
+    exit 1
+  fi
+done
 
 ARTIFACTS=(
   "build/bridge/bridge-${VERSION}.jar"

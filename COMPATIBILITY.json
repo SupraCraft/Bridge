@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.5.0",
+  "schema_version": "1.5.1",
   "status": "candidate-policy",
   "repository": "SupraCraft/Bridge",
   "bridge_source_version": "0.1.0-dev",
@@ -54,12 +54,13 @@
     "classfile_boundary_hosts": [21, 26],
     "modern_bytecode_boundary_hosts": [21, 26],
     "exact_bridge_version_required": true,
+    "reproducibility_evidence_consistency_required": true,
     "release_candidate_trigger": "release/X.Y.Z-rc.N + RELEASE_CANDIDATE.json",
     "release_candidate_publication": "github-packages-after-qualified-tested-build",
     "next_jdk_advisory": 27,
     "consumer_qualification_required_separately": true,
     "consumer": "SupraCraft/VanillaCord",
-    "notes": "A release-qualification PASS is tied to the exact source SHA and exact Bridge version and aggregates the full supported host-JVM sweep with class-file and modern-bytecode boundary evidence. Release candidates are immutable coordinates published only from tested bytes after this verdict. Stable release still requires an exact-version downstream VanillaCord qualification."
+    "notes": "A release-qualification PASS is tied to the exact source SHA and exact Bridge version and aggregates the full supported host-JVM sweep with class-file and modern-bytecode boundary evidence. Release-candidate evidence must also be internally consistent: retained build/reproducibility metadata and JAR provenance must describe the same source inputs without unresolved placeholders. Release candidates are immutable coordinates and are never overwritten. Stable release still requires an exact-version downstream VanillaCord qualification."
   },
   "asm": {
     "version": "9.10.1",
