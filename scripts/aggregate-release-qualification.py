@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 HOSTS = (21, 22, 23, 24, 25, 26)
@@ -28,18 +29,30 @@ def require(condition: bool, message: str) -> None:
         raise SystemExit(f"Release qualification failed: {message}")
 
 
+def current_project_version() -> str:
+    root = ET.parse("pom.xml").getroot()
+    ns = {"m": "http://maven.apache.org/POM/4.0.0"}
+    node = root.find("m:version", ns)
+    if node is None or not node.text or not node.text.strip():
+        raise SystemExit("Release qualification failed: unable to resolve Bridge project version")
+    return node.text.strip()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--evidence-root", type=Path, required=True)
     parser.add_argument("--source-sha", required=True)
+    parser.add_argument("--bridge-version")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+    bridge_version = args.bridge_version or current_project_version()
 
     host_summaries = []
     for host in HOSTS:
         report = load(args.evidence_root / "hosts" / f"host-jdk-{host}.json")
         require(report.get("schema") == "bridge-host-qualification/1", f"host {host}: wrong schema")
         require(report.get("sourceCommit") == args.source_sha, f"host {host}: source SHA mismatch")
+        require(report.get("bridgeSourceVersion") == bridge_version, f"host {host}: Bridge version mismatch")
         require(report.get("hostJavaFeature") == host, f"host {host}: wrong host feature")
         checks = report.get("checks", {})
         for name in ("reactorVerify", "runReport", "bytecodeBaseline", "multiReleaseRuntime"):
@@ -53,6 +66,7 @@ def main() -> int:
     for host in BOUNDARY_HOSTS:
         report = load(args.evidence_root / "classfiles" / f"host-{host}.json")
         require(report.get("schema") == "bridge-classfile-matrix/1", f"classfile host {host}: wrong schema")
+        require(report.get("bridgeVersion") == bridge_version, f"classfile host {host}: Bridge version mismatch")
         require(report.get("hostJavaFeature") == host, f"classfile host {host}: wrong host")
         targets = report.get("targets", [])
         require(tuple(item.get("javaRelease") for item in targets) == CLASSFILE_TARGETS,
@@ -66,6 +80,7 @@ def main() -> int:
     for host in BOUNDARY_HOSTS:
         report = load(args.evidence_root / "modern" / f"host-{host}.json")
         require(report.get("schema") == "bridge-modern-bytecode/1", f"modern host {host}: wrong schema")
+        require(report.get("bridgeVersion") == bridge_version, f"modern host {host}: Bridge version mismatch")
         require(report.get("hostJavaFeature") == host, f"modern host {host}: wrong host")
         cases = report.get("cases", [])
         require(tuple(item.get("id") for item in cases) == MODERN_CASES,
@@ -79,7 +94,7 @@ def main() -> int:
         "schema": "bridge-release-qualification/1",
         "status": "pass",
         "sourceCommit": args.source_sha,
-        "bridgeSourceVersion": "0.1.0-dev",
+        "bridgeSourceVersion": bridge_version,
         "hostJvm": {
             "qualified": list(HOSTS),
             "minimum": 21,

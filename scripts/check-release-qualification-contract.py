@@ -17,10 +17,14 @@ def main() -> int:
     compatibility = json.loads(Path("COMPATIBILITY.json").read_text(encoding="utf-8"))
     workflow_path = Path(".github/workflows/release-qualification.yml")
     aggregator_path = Path("scripts/aggregate-release-qualification.py")
-    require(workflow_path.is_file(), f"missing {workflow_path}")
-    require(aggregator_path.is_file(), f"missing {aggregator_path}")
+    classfile_runner_path = Path("scripts/run-classfile-compatibility.sh")
+    modern_runner_path = Path("scripts/run-modern-bytecode-compatibility.sh")
+    for path in (workflow_path, aggregator_path, classfile_runner_path, modern_runner_path):
+        require(path.is_file(), f"missing {path}")
     workflow = workflow_path.read_text(encoding="utf-8")
     aggregator = aggregator_path.read_text(encoding="utf-8")
+    classfile_runner = classfile_runner_path.read_text(encoding="utf-8")
+    modern_runner = modern_runner_path.read_text(encoding="utf-8")
 
     require(contract["compatibility"]["release_qualification_workflow"] == str(workflow_path),
             "PROJECT_CONTRACT compatibility workflow mismatch")
@@ -73,9 +77,27 @@ def main() -> int:
         require(fragment in workflow, f"workflow missing required fragment: {fragment}")
 
     require("bridge-release-qualification/1" in aggregator, "aggregator schema mismatch")
+    require('parser.add_argument("--bridge-version")' in aggregator,
+            "aggregator must accept an exact Bridge version override")
+    require('report.get("bridgeSourceVersion") == bridge_version' in aggregator,
+            "aggregator must validate host evidence Bridge version")
+    require('report.get("bridgeVersion") == bridge_version' in aggregator,
+            "aggregator must validate boundary evidence Bridge version")
+    require('"bridgeSourceVersion": bridge_version' in aggregator,
+            "aggregate verdict must record the exact qualified Bridge version")
     require("consumerQualification" in aggregator, "aggregator must preserve consumer gate state")
     require("required-separately-before-stable" in aggregator,
             "aggregator must not imply stable consumer qualification has passed")
+
+    for name, runner in (("class-file", classfile_runner), ("modern-bytecode", modern_runner)):
+        require('BRIDGE_VERSION' in runner, f"{name} runner must accept an exact Bridge version")
+        require('help:evaluate -Dexpression=project.version' in runner,
+                f"{name} runner must default to the current project version")
+        require('bridge-plugin:0.1.0-dev:bridge' not in runner,
+                f"{name} runner must not hardcode the development plugin coordinate")
+        require('"bridgeVersion": bridge_version' in runner,
+                f"{name} evidence must record the exact Bridge version")
+
     require("SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}" in workflow,
             "workflow must bind evidence to PR head SHA or pushed SHA")
     require(workflow.count("ref: ${{ env.SOURCE_SHA }}") == 4,

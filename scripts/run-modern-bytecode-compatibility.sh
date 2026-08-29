@@ -10,6 +10,8 @@ result_root='build/modern-bytecode-compatibility'
 
 host_feature="$(java -XshowSettings:properties -version 2>&1 | awk -F= '/java.specification.version/{gsub(/[[:space:]]/, "", $2); print $2; exit}')"
 test -n "$host_feature"
+bridge_version="${BRIDGE_VERSION:-$(./mvnw -q -DforceStdout help:evaluate -Dexpression=project.version)}"
+test -n "$bridge_version"
 
 rm -rf "$input_root" "$result_root"
 mkdir -p "$input_root/java21" "$input_root/java25" "$input_root/module21" "$result_root"
@@ -27,7 +29,7 @@ mkdir -p "$input_root/java21" "$input_root/java25" "$input_root/module21" "$resu
   "$source_root/module21/module-info.java" \
   "$source_root/module21/modern/module/ModuleFixture.java"
 
-printf 'Installing Bridge 0.1.0-dev under host JDK %s\n' "$host_feature"
+printf 'Installing Bridge %s under host JDK %s\n' "$bridge_version" "$host_feature"
 ./mvnw -B -pl bridge-plugin -am install -DskipTests
 
 transform_case() {
@@ -37,13 +39,13 @@ transform_case() {
   local expected="$4"
   local mode="${5:-classpath}"
 
-  printf 'Transforming modern fixture %s under host JDK %s\n' "$name" "$host_feature"
+  printf 'Transforming modern fixture %s with Bridge %s under host JDK %s\n' "$name" "$bridge_version" "$host_feature"
   rm -rf "$fixture_dir/target"
   mkdir -p "$fixture_dir/target/classes"
   cp -a "$input/." "$fixture_dir/target/classes/"
 
   ./mvnw -B -f "$fixture_dir/pom.xml" \
-    io.github.supracraft.bridge:bridge-plugin:0.1.0-dev:bridge \
+    "io.github.supracraft.bridge:bridge-plugin:${bridge_version}:bridge" \
     -Dbridge.flags=FORCE_COMPILE
 
   python3 scripts/check-run-report.py "$fixture_dir/target/bridge/bridge-report.json"
@@ -82,16 +84,17 @@ module_classes="$fixture_dir/target/classes"
 "$JDK26_HOME/bin/javap" -v "$module_classes/module-info.class" > /tmp/bridge-modern-module.txt
 grep -F 'Module:' /tmp/bridge-modern-module.txt
 
-python3 - "$host_feature" "$result_root/host-$host_feature.json" <<'PY'
+python3 - "$host_feature" "$bridge_version" "$result_root/host-$host_feature.json" <<'PY'
 import json
 import pathlib
 import sys
 
 host = int(sys.argv[1])
-out = pathlib.Path(sys.argv[2])
+bridge_version = sys.argv[2]
+out = pathlib.Path(sys.argv[3])
 report = {
     "schema": "bridge-modern-bytecode/1",
-    "bridgeVersion": "0.1.0-dev",
+    "bridgeVersion": bridge_version,
     "hostJavaFeature": host,
     "producerJavaFeature": 26,
     "cases": [
@@ -128,4 +131,4 @@ out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 print(f"Wrote {out}")
 PY
 
-printf 'Bridge modern-bytecode compatibility OK under host JDK %s\n' "$host_feature"
+printf 'Bridge %s modern-bytecode compatibility OK under host JDK %s\n' "$bridge_version" "$host_feature"
