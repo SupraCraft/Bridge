@@ -41,8 +41,11 @@ Published candidate status records live under `release-candidates/`. They preser
 
 ## Candidate history
 
-- `0.1.0-rc.1` was published successfully to GitHub Packages and its JAR manifests carry the correct source provenance. It is **not eligible for stable promotion** because its retained `REPRODUCIBILITY.properties` recorded unresolved CI placeholders for the build commit, ref, and run. The immutable coordinate is preserved and a later candidate carries the corrected evidence contract. See `release-candidates/0.1.0-rc.1.json`.
+- `0.1.0-rc.1` was published successfully to GitHub Packages and its JAR manifests carry the correct source provenance. It is **not eligible for stable promotion** because its retained `REPRODUCIBILITY.properties` recorded unresolved CI placeholders for the build commit, ref, and run. The immutable coordinate is preserved. See `release-candidates/0.1.0-rc.1.json`.
+- `0.1.0-rc.2` was built reproducibly, qualified on host JDK 21 through 26, qualified against Java 8 through 26 input class files, passed the modern-bytecode boundary cases, and was published from the tested Maven handoff. Its retained provenance is internally consistent. `SupraCraft/VanillaCord` then consumed the exact `0.1.0-rc.2` coordinate and passed its reactor, exact-coordinate artifact check, current Minecraft stable patch/integrity/boot probe, and maintained blocking regression set. The advertised Bridge feature surface also has representative automated coverage. `0.1.0-rc.2` is therefore **eligible for stable promotion**. See `release-candidates/0.1.0-rc.2.json`.
 
 ## Consumer qualification
 
-`SupraCraft/VanillaCord` is the reference consumer. Before Bridge `X.Y.Z` can be promoted stable, VanillaCord must qualify against the exact candidate coordinate. Its ordinary development resolver intentionally selects only immutable `X.Y.Z-dev.N` builds, so candidate qualification must use an explicit `BRIDGE_VERSION=X.Y.Z-rc.N` pin.
+`SupraCraft/VanillaCord` is the reference consumer. Before Bridge `X.Y.Z` can be promoted stable, VanillaCord must qualify against the exact candidate coordinate.
+
+VanillaCord provides a push-driven qualification lane using branch `qualification/bridge/<exact-version>` plus `BRIDGE_QUALIFICATION.json`. The lane pins the exact immutable Bridge coordinate, runs VanillaCord and the blocking Minecraft compatibility scope, and emits machine-readable consumer evidence. Ordinary VanillaCord development continues to resolve only normal immutable development coordinates unless explicitly pinned.
