@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "status": "candidate-policy",
   "repository": "SupraCraft/Bridge",
   "bridge_source_version": "0.1.0-dev",
@@ -32,10 +32,10 @@
   "verification": {
     "reactor_verify": true,
     "dependency_convergence": true,
-    "asm_verifier": "planned-before-0.1.0",
-    "jdk_classfile_api_verifier": "planned-on-jdk-24-plus-before-0.1.0",
-    "jvm_verify_all": "planned-before-0.1.0",
-    "behavioral_execution": "required-for-release-qualification"
+    "asm_verifier": "bridge-test/tests/bridge/VerificationTests.java",
+    "jdk_classfile_api_verifier": "scripts/VerifyClassFiles.java on JDK 25+ compatibility lanes",
+    "jvm_verify_all": "bridge-test Surefire executes with -Xverify:all",
+    "behavioral_execution": "existing bridge-test suite is required on every host lane; advertised-feature coverage expansion remains a 0.1.0 release gate"
   },
   "consumer_qualification": {
     "required_for_stable": true,
