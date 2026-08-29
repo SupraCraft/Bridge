@@ -1,85 +1,17 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Bridge — Java bytecode tooling</title>
   <meta name="description" content="SupraCraft-maintained Bridge fork: post-compile Maven plugin and bytecode library for Java transformation tooling.">
-  <link rel="canonical" href="https://supracraft.github.io/Bridge/">
-  <link rel="icon" href="assets/brand/icon.svg" type="image/svg+xml">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Bridge — Java bytecode tooling">
-  <meta property="og:description" content="Post-compile Maven transformations and bytecode support using existing Java semantics.">
-  <meta property="og:url" content="https://supracraft.github.io/Bridge/">
-  <meta property="og:image" content="https://supracraft.github.io/Bridge/assets/brand/hero.svg">
-  <meta name="theme-color" content="#102B33">
-  <style>
-    :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#243F46;background:#F5F2EB;line-height:1.55}*{box-sizing:border-box}body{margin:0}a{color:inherit}.shell{max-width:1120px;margin:auto;padding:0 24px}.top{background:#102B33;color:#F2EEE5}.nav{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:18px 0}.brand{display:flex;align-items:center;gap:12px;font-weight:720;font-size:1.15rem;text-decoration:none}.brand img{width:42px;height:42px}.links{display:flex;gap:18px;flex-wrap:wrap;font-size:.92rem}.links a{text-decoration:none;color:#D8E2E3}.hero{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:44px;align-items:center;padding:58px 0 64px}.hero h1{font-size:clamp(2.8rem,7vw,5.6rem);line-height:.94;margin:0 0 18px;letter-spacing:-.045em}.hero p{font-size:1.16rem;color:#D6E0E1;max-width:650px}.hero img{display:block;width:100%;border-radius:24px}.eyebrow{color:#74C6D0;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:.78rem}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.button{display:inline-block;border:1px solid #789099;border-radius:9px;padding:10px 14px;text-decoration:none;font-weight:650}.button.primary{background:#C27742;color:#161D1F;border-color:#C27742}.main{padding:48px 0 72px}.facts,.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}.fact,.card{background:#fff;border:1px solid #D9D5CD;border-radius:14px;padding:18px}.fact strong,.card h3{display:block;margin:0 0 6px}.fact code,code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.section{margin-top:42px}.section h2{font-size:1.65rem;margin:0 0 14px}.quiet{color:#5C686B}.notice{border-left:4px solid #C27742;padding:10px 0 10px 16px}.machine{background:#E9F1F1;border-radius:14px;padding:20px}.machine a{margin-right:14px}.footer{border-top:1px solid #D9D5CD;padding:24px 0 40px;color:#657174;font-size:.92rem}@media(max-width:760px){.hero{grid-template-columns:1fr;padding-top:36px}.links{display:none}.hero img{order:-1}.hero h1{font-size:3.4rem}}
-  </style>
-</head>
-<body>
-<header class="top">
-  <div class="shell">
-    <nav class="nav" aria-label="Primary">
-      <a class="brand" href="./"><img src="assets/brand/icon.svg" alt=""><span>Bridge</span></a>
-      <div class="links"><a href="https://github.com/SupraCraft/Bridge/blob/master/README.md">Docs</a><a href="https://github.com/SupraCraft/Bridge/releases">Releases</a><a href="https://github.com/SupraCraft/Bridge">GitHub</a></div>
-    </nav>
-    <section class="hero">
-      <div>
-        <div class="eyebrow">Java / Maven / bytecode</div>
-        <h1>Bridge</h1>
-        <p>A post-compile Maven plugin and supporting bytecode library for transformations that use existing Java semantics.</p>
-        <div class="actions"><a class="button primary" href="https://github.com/SupraCraft/Bridge/blob/master/docs/artifact-consumption.md">Use Bridge</a><a class="button" href="https://github.com/SupraCraft/Bridge">View source</a></div>
-      </div>
-      <img src="assets/brand/hero.svg" alt="Source and class-file panels connected by a modern bridge.">
-    </section>
-  </div>
-</header>
-<main class="shell main">
-  <section class="facts" aria-label="Project facts">
-    <div class="fact"><strong>Maven group</strong><code>io.github.supracraft.bridge</code></div>
-    <div class="fact"><strong>Source line</strong><code id="source-version">0.1.0-dev</code></div>
-    <div class="fact"><strong>Java bytecode</strong><span id="java-release">21</span></div>
-    <div class="fact"><strong>ASM baseline</strong><span id="asm-version">9.10.1</span></div>
-    <div class="fact"><strong>PR host-JDK lanes</strong><span id="host-jvms">21, 25, 26</span></div>
-    <div class="fact"><strong>Publication</strong>GitHub Packages + durable release assets</div>
-  </section>
-
-  <section class="section">
-    <h2>What it is</h2>
-    <div class="cards">
-      <article class="card"><h3>Maven plugin</h3><p>Performs Bridge transformations after Java compilation.</p></article>
-      <article class="card"><h3>Bytecode support</h3><p>Provides runtime/API and ASM helper modules used by transformed consumers.</p></article>
-      <article class="card"><h3>Exact publications</h3><p>CI builds once, validates the produced bytes, and promotes those tested artifacts.</p></article>
-    </div>
-  </section>
-
-  <section class="section">
-    <h2>Compatibility qualification</h2>
-    <p>Bridge uses one artifact set per Bridge version. The compatibility policy defines blocking, release-qualification, and early-access JVM lanes; only completed CI/release evidence establishes tested support.</p>
-    <p><a href="compatibility.json">Machine-readable compatibility policy</a> · <a href="https://github.com/SupraCraft/Bridge/blob/master/docs/roadmap/0.1.0-uplift.md">0.1.0 qualification plan</a></p>
-  </section>
-
-  <section class="section">
-    <h2>Quick start</h2>
-    <p>Pin one exact Bridge version across the API/helper/plugin modules. GitHub Packages is the canonical Maven repository for current immutable publications and requires authentication.</p>
-    <p><a href="https://github.com/SupraCraft/Bridge/blob/master/docs/artifact-consumption.md">Artifact consumption guide</a> · <a href="https://github.com/SupraCraft/Bridge/blob/master/VERSIONING.md">Version semantics</a> · <a href="https://github.com/SupraCraft/Bridge/blob/master/docs/diagnostics.md">Diagnostics</a></p>
-  </section>
-
-  <section class="section notice">
-    <strong>SupraCraft-maintained fork.</strong> Bridge is derived from <a href="https://github.com/ME1312/Bridge">ME1312/Bridge</a>. Upstream authorship and license history are preserved; new SupraCraft publications use SupraCraft-owned coordinates and provenance.
-  </section>
-
-  <section class="section machine">
-    <h2>For automation and agents</h2>
-    <p class="quiet">Generated Pages endpoints mirror canonical repository contracts. Prefer these or the source files over scraping presentation HTML.</p>
-    <p><a href="project.json">project.json</a><a href="compatibility.json">compatibility.json</a><a href="github.json">github.json</a><a href="artifacts.json">artifacts.json</a><a href="brand.json">brand.json</a><a href="llms.txt">llms.txt</a></p>
-  </section>
-</main>
-<footer class="footer"><div class="shell">Bridge · SupraCraft · MPL-2.0 · <a href="https://github.com/SupraCraft/Bridge/blob/master/docs/brand-guidelines.md">Brand/public-surface notes</a></div></footer>
-<script>
-fetch('project.json').then(r=>r.ok?r.json():null).then(p=>{if(!p)return;document.getElementById('source-version').textContent=p.source_version;document.getElementById('java-release').textContent=p.toolchain.java_bytecode_release}).catch(()=>{});
-fetch('compatibility.json').then(r=>r.ok?r.json():null).then(c=>{if(!c)return;document.getElementById('asm-version').textContent=c.asm.version;document.getElementById('host-jvms').textContent=c.host_jvm.pull_request_blocking.join(', ')}).catch(()=>{});
-</script>
-</body>
-</html>
+  <link rel="canonical" href="https://supracraft.github.io/Bridge/"><link rel="icon" href="assets/brand/icon.svg" type="image/svg+xml"><meta name="theme-color" content="#102B33">
+  <style>:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#243F46;background:#F5F2EB;line-height:1.55}*{box-sizing:border-box}body{margin:0}a{color:inherit}.shell{max-width:1120px;margin:auto;padding:0 24px}.top{background:#102B33;color:#F2EEE5}.nav{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:18px 0}.brand{display:flex;align-items:center;gap:12px;font-weight:720;text-decoration:none}.brand img{width:42px}.links{display:flex;gap:18px;flex-wrap:wrap}.links a{text-decoration:none;color:#D8E2E3}.hero{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:44px;align-items:center;padding:58px 0 64px}.hero h1{font-size:clamp(2.8rem,7vw,5.6rem);line-height:.94;margin:0 0 18px}.hero p{font-size:1.16rem;color:#D6E0E1}.hero img{width:100%;border-radius:24px}.eyebrow{color:#74C6D0;font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:.78rem}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.button{display:inline-block;border:1px solid #789099;border-radius:9px;padding:11px 15px;text-decoration:none;font-weight:650}.primary{background:#C27742;color:#161D1F;border-color:#C27742}.main{padding:48px 0 72px}.facts,.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}.fact,.card{background:#fff;border:1px solid #D9D5CD;border-radius:14px;padding:18px}.section{margin-top:42px}.machine{background:#E9F1F1;border-radius:14px;padding:20px}.machine a{margin-right:14px}.quiet{color:#5C686B}code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.footer{border-top:1px solid #D9D5CD;padding:24px 0 40px;color:#657174}@media(max-width:760px){.hero{grid-template-columns:1fr}.links{display:none}.hero img{order:-1}}</style>
+</head><body>
+<header class="top"><div class="shell"><nav class="nav"><a class="brand" href="./"><img src="assets/brand/icon.svg" alt=""><span>Bridge</span></a><div class="links"><a href="use/">Use Bridge</a><a href="compatibility/">Compatibility</a><a href="releases/">Releases</a><a href="https://github.com/SupraCraft/Bridge">Source</a></div></nav><section class="hero"><div><div class="eyebrow">Java / Maven / bytecode</div><h1>Bridge</h1><p>A post-compile Maven plugin and supporting bytecode library for transformations that use existing Java semantics.</p><div class="actions"><a class="button primary" href="use/">Use the current stable release</a><a class="button" href="releases/">Release information</a></div></div><img src="assets/brand/hero.svg" alt="Source and class-file panels connected by a modern bridge."></section></div></header>
+<main class="shell main"><section class="facts"><div class="fact"><strong>Maven group</strong><br><code>io.github.supracraft.bridge</code></div><div class="fact"><strong>Source line</strong><br><code id="source-version">0.1.1-dev</code></div><div class="fact"><strong>Java bytecode</strong><br><span id="java-release">21</span></div><div class="fact"><strong>ASM baseline</strong><br><span id="asm-version">9.10.1</span></div><div class="fact"><strong>PR host-JDK lanes</strong><br><span id="host-jvms">21, 25, 26</span></div></section>
+<section class="section cards"><article class="card"><h2>Use Bridge</h2><p>Copy a complete Maven configuration using the current stable version and canonical GitHub Packages repository.</p><p><a href="use/">Open the usage guide →</a></p></article><article class="card"><h2>Compatibility</h2><p>See the tested JVM and class-file envelope in a readable summary, with the machine policy alongside it.</p><p><a href="compatibility/">View compatibility →</a></p></article><article class="card"><h2>Releases</h2><p>Get version-specific information, direct standalone assets, checksums, and qualification evidence without navigating the repository UI.</p><p><a href="releases/">Browse releases →</a></p></article></section>
+<section class="section"><h2>What Bridge is</h2><p>Bridge provides post-compile Maven transformations plus runtime/API and ASM helper modules. New publications use the SupraCraft Maven group <code>io.github.supracraft.bridge</code>. Bridge is derived from <a href="https://github.com/ME1312/Bridge">ME1312/Bridge</a>; upstream authorship and license history are preserved.</p></section>
+<section class="section machine"><h2>For scripts and automation</h2><p class="quiet">These are stable public interfaces. Prefer them over scraping GitHub release pages.</p><p><a href="project.json">project.json</a><a href="compatibility.json">compatibility.json</a><a href="github.json">github.json</a><a href="brand.json">brand.json</a><a href="artifacts.json">artifacts.json</a><a href="releases/stable.json">releases/stable.json</a><a href="releases/stable.txt">releases/stable.txt</a><a href="releases/stable-url.txt">releases/stable-url.txt</a><a href="llms.txt">llms.txt</a></p></section></main>
+<footer class="footer"><div class="shell">Bridge · SupraCraft · MPL-2.0</div></footer>
+<script>fetch('project.json').then(r=>r.json()).then(p=>{document.getElementById('source-version').textContent=p.source_version;document.getElementById('java-release').textContent=p.toolchain.java_bytecode_release}).catch(()=>{});fetch('compatibility.json').then(r=>r.json()).then(c=>{document.getElementById('asm-version').textContent=c.asm.version;document.getElementById('host-jvms').textContent=c.host_jvm.pull_request_blocking.join(', ')}).catch(()=>{});</script>
+</body></html>
