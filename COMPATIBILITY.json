@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.2.0",
+  "schema_version": "1.3.0",
   "status": "candidate-policy",
   "repository": "SupraCraft/Bridge",
   "bridge_source_version": "0.1.0-dev",
@@ -21,6 +21,31 @@
     "advisory_early_access": ["27-ea"],
     "notes": "The class-file workflow compiles one neutral fixture at every listed Java release, transforms each class file with the same Bridge source build under host JDK 21 and 26, preserves the class major, validates the Bridge run report, verifies with the JDK Class-File API, runs -Xverify:all, and executes the transformed class on JDK 26. A target is tested support only when the relevant qualification run has completed successfully."
   },
+  "modern_bytecode": {
+    "cross_host_transform": [21, 26],
+    "producer_jdk": 26,
+    "workflow": ".github/workflows/modern-bytecode-compatibility.yml",
+    "runner": "scripts/run-modern-bytecode-compatibility.sh",
+    "evidence_schema": "bridge-modern-bytecode/1",
+    "cases": [
+      {
+        "id": "java21-modern-language-bytecode",
+        "release": 21,
+        "features": ["record", "sealed-types", "record-pattern-switch", "invokedynamic-lambda", "invokedynamic-string-concat"]
+      },
+      {
+        "id": "java25-flexible-constructor",
+        "release": 25,
+        "features": ["statements-before-super-constructor-invocation"]
+      },
+      {
+        "id": "java21-module-info",
+        "release": 21,
+        "features": ["module-attribute", "module-info-class"]
+      }
+    ],
+    "notes": "These cases are deliberately risk-focused rather than a catalog of Java language features. They exercise class-file structures and verifier/constructor/module behaviors most likely to expose assumptions in a bytecode transformer."
+  },
   "asm": {
     "version": "9.10.1",
     "single_version_required": true,
@@ -38,9 +63,9 @@
     "reactor_verify": true,
     "dependency_convergence": true,
     "asm_verifier": "bridge-test/tests/bridge/VerificationTests.java",
-    "jdk_classfile_api_verifier": "scripts/VerifyClassFiles.java on JDK 25+ compatibility lanes and class-file qualification output",
-    "jvm_verify_all": "bridge-test Surefire and class-file execution use -Xverify:all",
-    "behavioral_execution": "bridge-test advertised-feature suite runs on host lanes; class-file qualification executes every transformed release fixture"
+    "jdk_classfile_api_verifier": "scripts/VerifyClassFiles.java on JDK 25+ compatibility lanes, class-file qualification, and modern-bytecode qualification",
+    "jvm_verify_all": "bridge-test Surefire and compatibility fixture execution use -Xverify:all",
+    "behavioral_execution": "bridge-test advertised-feature suite plus class-file and modern-bytecode fixtures must execute successfully"
   },
   "consumer_qualification": {
     "required_for_stable": true,
