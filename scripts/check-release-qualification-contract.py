@@ -66,17 +66,15 @@ def main() -> int:
         "bash scripts/run-modern-bytecode-compatibility.sh",
         "python3 scripts/aggregate-release-qualification.py",
         "--source-sha \"$SOURCE_SHA\"",
-        "bridge-release-qualification/bridge-release-qualification.json",
+        "build/release-qualification/bridge-release-qualification.json",
         "retention-days: 90",
-        "consumerQualification",
     )
-    # consumerQualification lives in the aggregator rather than the workflow.
-    for fragment in required_workflow_fragments[:-1]:
+    for fragment in required_workflow_fragments:
         require(fragment in workflow, f"workflow missing required fragment: {fragment}")
-    require(required_workflow_fragments[-1] in aggregator, "aggregator must preserve consumer gate state")
 
     require("bridge-release-qualification/1" in aggregator, "aggregator schema mismatch")
-    require("consumerQualification\": \"required-separately-before-stable" in aggregator,
+    require("consumerQualification" in aggregator, "aggregator must preserve consumer gate state")
+    require("required-separately-before-stable" in aggregator,
             "aggregator must not imply stable consumer qualification has passed")
     require("SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}" in workflow,
             "workflow must bind evidence to PR head SHA or pushed SHA")
