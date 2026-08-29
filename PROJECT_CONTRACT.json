@@ -80,7 +80,7 @@
     "brand_profile": "BRAND_PROFILE.json",
     "brand_manifest": "docs/assets/brand/brand.json",
     "brand_guidelines": "docs/brand-guidelines.md",
-    "machine_endpoints": ["project.json", "github.json", "brand.json", "artifacts.json", "llms.txt"],
+    "machine_endpoints": ["project.json", "compatibility.json", "github.json", "brand.json", "artifacts.json", "llms.txt"],
     "upstream_attribution_required": true
   },
   "provenance": {
