@@ -4,7 +4,6 @@
 import argparse
 import html
 import json
-import re
 import shutil
 from pathlib import Path
 
@@ -17,29 +16,93 @@ def load(path):
 
 
 def write_json(path, value):
-    path = Path(path); path.parent.mkdir(parents=True, exist_ok=True)
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def write(path, value):
-    path = Path(path); path.parent.mkdir(parents=True, exist_ok=True); path.write_text(value, encoding="utf-8")
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(value, encoding="utf-8")
 
 
-def replace_fact(page, pattern, value, label):
-    rendered, count = re.subn(pattern, lambda m: f"{m.group(1)}{value}{m.group(2)}", page, count=1)
-    if count != 1: raise RuntimeError(f"unable to render {label}")
-    return rendered
+def join_url(base, path=""):
+    base = base.rstrip("/")
+    path = path.lstrip("/")
+    return f"{base}/{path}" if path else f"{base}/"
 
 
-def shell(title, body, base):
-    return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(title)} · Bridge</title><link rel="icon" href="{base}/assets/brand/icon.svg" type="image/svg+xml"><style>
-:root{{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#243F46;background:#F5F2EB;line-height:1.55}}*{{box-sizing:border-box}}body{{margin:0}}a{{color:#255F6A}}.shell{{max-width:980px;margin:auto;padding:0 24px}}header{{background:#102B33;color:#F2EEE5}}nav{{display:flex;justify-content:space-between;gap:18px;padding:18px 0;flex-wrap:wrap}}nav a{{color:#D8E2E3;text-decoration:none;font-weight:650}}main{{padding:42px 0 72px}}h1{{font-size:clamp(2.2rem,6vw,4rem);line-height:1}}.card{{background:#fff;border:1px solid #D9D5CD;border-radius:14px;padding:20px;margin:18px 0}}.button{{display:inline-block;background:#C27742;color:#161D1F;border-radius:9px;padding:11px 15px;text-decoration:none;font-weight:700}}code{{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#E9E5DC;padding:.1em .3em;border-radius:4px}}pre{{overflow:auto;background:#17292E;color:#F2EEE5;padding:16px;border-radius:10px}}table{{width:100%;border-collapse:collapse;background:#fff}}th,td{{text-align:left;padding:10px;border-bottom:1px solid #D9D5CD}}.dot{{display:inline-block;width:.72em;height:.72em;border-radius:50%;background:#278451;margin-right:.45em}}.quiet{{color:#5C686B}}footer{{border-top:1px solid #D9D5CD;padding:24px 0 40px;color:#657174}}</style></head><body><header><div class="shell"><nav><a href="{base}/">Bridge</a><span><a href="{base}/use/">Use Bridge</a> · <a href="{base}/compatibility/">Compatibility</a> · <a href="{base}/releases/">Releases</a></span></nav></div></header><main class="shell">{body}</main><footer><div class="shell">Bridge · SupraCraft · MPL-2.0</div></footer></body></html>'''
+def shell(title, description, body, route, base, canonical_base):
+    nav = [
+        ("use/", "Use Bridge"),
+        ("compatibility/", "Compatibility"),
+        ("releases/", "Releases"),
+        ("accessibility/", "Accessibility"),
+    ]
+    links = []
+    for path, label in nav:
+        current = ' aria-current="page"' if route == path else ""
+        links.append(f'<a href="{html.escape(join_url(base, path))}"{current}>{html.escape(label)}</a>')
+    brand_current = ' aria-current="page"' if route == "" else ""
+    canonical = join_url(canonical_base, route)
+    return f'''<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{html.escape(description)}">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#E0ECEC" data-effective-theme="light">
+  <link rel="canonical" href="{html.escape(canonical)}">
+  <link rel="icon" href="{html.escape(join_url(base, 'assets/brand/icon.svg'))}" type="image/svg+xml">
+  <link rel="stylesheet" href="{html.escape(join_url(base, 'assets/site.css'))}">
+  <title>{html.escape(title)} · Bridge</title>
+  <script src="{html.escape(join_url(base, 'assets/site.js'))}" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<header class="site-header">
+  <div class="shell">
+    <nav class="site-nav" aria-label="Primary">
+      <a class="brand" href="{html.escape(join_url(base))}"{brand_current}>
+        <img class="brand-mark" src="{html.escape(join_url(base, 'assets/brand/icon.svg'))}" alt="">
+        <span>Bridge</span>
+      </a>
+      <div class="nav-cluster">
+        <div class="nav-links">{''.join(links)}</div>
+        <label class="theme-control" for="theme-select">Theme
+          <select id="theme-select" aria-label="Theme">
+            <option value="system">System</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </label>
+      </div>
+    </nav>
+  </div>
+</header>
+<main id="main-content" class="shell main" tabindex="-1">{body}</main>
+<footer class="site-footer">
+  <div class="shell footer-row">
+    <span>Bridge · SupraCraft · MPL-2.0</span>
+    <span><a href="{html.escape(join_url(base, 'accessibility/'))}">Accessibility</a> · <a href="https://github.com/SupraCraft/Bridge">Source</a> · derived from <a href="https://github.com/ME1312/Bridge">ME1312/Bridge</a></span>
+  </div>
+</footer>
+</body>
+</html>
+'''
 
 
 def main():
-    parser = argparse.ArgumentParser(); parser.add_argument("--output", default="build/public-site"); args = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output", default="build/public-site")
+    parser.add_argument("--base-url")
+    args = parser.parse_args()
+
     output = (ROOT / args.output).resolve() if not Path(args.output).is_absolute() else Path(args.output)
-    if output.exists(): shutil.rmtree(output)
+    if output.exists():
+        shutil.rmtree(output)
     shutil.copytree(DOCS, output)
 
     contract = load(ROOT / "PROJECT_CONTRACT.json")
@@ -47,38 +110,130 @@ def main():
     metadata = load(ROOT / "GITHUB_METADATA.json")
     brand = load(DOCS / "assets/brand/brand.json")
     stable = load(ROOT / "CURRENT_STABLE.json")
-    base = metadata["homepage"].rstrip("/")
-
-    page_path = output / "index.html"; page = page_path.read_text(encoding="utf-8")
-    page = replace_fact(page, r'(<code id="source-version">)[^<]*(</code>)', contract["source_version"], "source version")
-    page = replace_fact(page, r'(<span id="java-release">)[^<]*(</span>)', str(contract["toolchain"]["java_bytecode_release"]), "Java release")
-    page = replace_fact(page, r'(<span id="asm-version">)[^<]*(</span>)', compatibility["asm"]["version"], "ASM version")
-    page = replace_fact(page, r'(<span id="host-jvms">)[^<]*(</span>)', ", ".join(str(v) for v in compatibility["host_jvm"]["pull_request_blocking"]), "host JVMs")
-    page_path.write_text(page, encoding="utf-8")
-
-    write_json(output / "project.json", contract); write_json(output / "compatibility.json", compatibility); write_json(output / "github.json", metadata); write_json(output / "brand.json", brand)
-    write_json(output / "releases/stable.json", stable); write(output / "releases/stable.txt", stable["version"] + "\n"); write(output / "releases/stable-url.txt", stable["artifacts"]["bridge"]["download_url"] + "\n")
-    write_json(output / "artifacts.json", {"schema_version":"1.1.0","repository":contract["repository"],"source_version":contract["source_version"],"stable_release":stable,"artifact":contract["artifact"],"versioning":contract["versioning"],"provenance":contract["provenance"]})
-
+    canonical_base = metadata["homepage"].rstrip("/")
+    base = (args.base_url or canonical_base).rstrip("/")
     version = stable["version"]
+
+    index_body = f'''
+<section class="hero">
+  <div>
+    <div class="eyebrow">Java · Maven · bytecode</div>
+    <h1>Bridge</h1>
+    <p>{html.escape(metadata['description'])}</p>
+    <div class="actions">
+      <a class="button primary" href="{html.escape(join_url(base, 'use/'))}">Use Bridge {html.escape(version)}</a>
+      <a class="button" href="{html.escape(join_url(base, 'compatibility/'))}">Check compatibility</a>
+    </div>
+  </div>
+  <img class="hero-art" src="{html.escape(join_url(base, 'assets/brand/hero.svg'))}" alt="Source and class-file panels connected by a modern bridge.">
+</section>
+<section class="facts" aria-label="Bridge facts">
+  <div class="fact"><strong>Maven group</strong><br><code>{html.escape(contract['artifact']['group'])}</code></div>
+  <div class="fact"><strong>Current stable</strong><br><code>{html.escape(version)}</code></div>
+  <div class="fact"><strong>Source line</strong><br><code>{html.escape(contract['source_version'])}</code></div>
+  <div class="fact"><strong>Java bytecode baseline</strong><br>{contract['toolchain']['java_bytecode_release']}</div>
+  <div class="fact"><strong>ASM baseline</strong><br>{html.escape(compatibility['asm']['version'])}</div>
+</section>
+<section class="section cards">
+  <article class="card"><h2>Use Bridge</h2><p>Copy the canonical Maven configuration for the current stable release and understand package authentication.</p><p><a href="{html.escape(join_url(base, 'use/'))}">Open the usage guide →</a></p></article>
+  <article class="card"><h2>Compatibility</h2><p>Read the tested host-JVM and class-file envelope backed by release qualification evidence.</p><p><a href="{html.escape(join_url(base, 'compatibility/'))}">View compatibility →</a></p></article>
+  <article class="card"><h2>Releases</h2><p>Get version-specific artifact links, checksums, and qualification evidence without navigating the repository UI.</p><p><a href="{html.escape(join_url(base, 'releases/'))}">Browse releases →</a></p></article>
+</section>
+<section class="section machine">
+  <h2>For scripts and automation</h2>
+  <p class="quiet">These are stable public interfaces. Prefer them over scraping GitHub release pages.</p>
+  <div class="link-list">
+    <a href="{html.escape(join_url(base, 'project.json'))}">project.json</a>
+    <a href="{html.escape(join_url(base, 'compatibility.json'))}">compatibility.json</a>
+    <a href="{html.escape(join_url(base, 'github.json'))}">github.json</a>
+    <a href="{html.escape(join_url(base, 'brand.json'))}">brand.json</a>
+    <a href="{html.escape(join_url(base, 'artifacts.json'))}">artifacts.json</a>
+    <a href="{html.escape(join_url(base, 'releases/stable.json'))}">stable.json</a>
+    <a href="{html.escape(join_url(base, 'releases/stable.txt'))}">stable.txt</a>
+    <a href="{html.escape(join_url(base, 'llms.txt'))}">llms.txt</a>
+  </div>
+</section>
+'''
+    write(output / "index.html", shell("Java bytecode tooling", metadata["description"], index_body, "", base, canonical_base))
+
+    write_json(output / "project.json", contract)
+    write_json(output / "compatibility.json", compatibility)
+    write_json(output / "github.json", metadata)
+    write_json(output / "brand.json", brand)
+    write_json(output / "releases/stable.json", stable)
+    write(output / "releases/stable.txt", version + "\n")
+    write(output / "releases/stable-url.txt", stable["artifacts"]["bridge"]["download_url"] + "\n")
+    write_json(output / "artifacts.json", {
+        "schema_version": "1.1.0",
+        "repository": contract["repository"],
+        "source_version": contract["source_version"],
+        "stable_release": stable,
+        "artifact": contract["artifact"],
+        "versioning": contract["versioning"],
+        "provenance": contract["provenance"],
+    })
+
     repo = stable["maven"]["repository"]
     maven = f'''<properties>\n  <bridge.version>{version}</bridge.version>\n</properties>\n<repositories>\n  <repository><id>bridge-github</id><url>{repo}</url></repository>\n</repositories>\n<pluginRepositories>\n  <pluginRepository><id>bridge-github</id><url>{repo}</url></pluginRepository>\n</pluginRepositories>\n<dependencies>\n  <dependency>\n    <groupId>io.github.supracraft.bridge</groupId>\n    <artifactId>bridge</artifactId>\n    <version>${{bridge.version}}</version>\n    <scope>provided</scope>\n  </dependency>\n</dependencies>\n<build><plugins><plugin>\n  <groupId>io.github.supracraft.bridge</groupId>\n  <artifactId>bridge-plugin</artifactId>\n  <version>${{bridge.version}}</version>\n  <executions><execution><goals><goal>bridge</goal></goals></execution></executions>\n</plugin></plugins></build>'''
-    bash = f'''BRIDGE_VERSION=$(curl -fsSL {base}/releases/stable.txt)\necho "$BRIDGE_VERSION"'''
-    ps = f'''$bridgeVersion = (Invoke-RestMethod '{base}/releases/stable.txt').Trim()\n$bridgeVersion'''
-    use_body = f'''<h1>Use Bridge {html.escape(version)}</h1><p>The current stable release is <strong>{html.escape(version)}</strong>. Pin that exact version across Bridge modules and the Maven plugin.</p><div class="card"><h2>Maven</h2><pre>{html.escape(maven)}</pre><p>GitHub Packages requires authentication. In Actions use <code>GITHUB_TOKEN</code>; locally use a token with package read permission and the matching GitHub actor.</p></div><h2>Stable version lookup</h2><p>Bash:</p><pre>{html.escape(bash)}</pre><p>PowerShell:</p><pre>{html.escape(ps)}</pre><p>Structured metadata: <a href="{base}/releases/stable.json">stable.json</a>.</p>'''
-    write(output / "use/index.html", shell("Use Bridge", use_body, base))
+    bash = f'''BRIDGE_VERSION=$(curl -fsSL {join_url(canonical_base, 'releases/stable.txt')})\necho "$BRIDGE_VERSION"'''
+    ps = f'''$bridgeVersion = (Invoke-RestMethod '{join_url(canonical_base, 'releases/stable.txt')}').Trim()\n$bridgeVersion'''
+    use_body = f'''
+<h1>Use Bridge {html.escape(version)}</h1>
+<p>The current stable release is <strong>{html.escape(version)}</strong>. Pin that exact version across Bridge modules and the Maven plugin.</p>
+<div class="notice"><strong>GitHub Packages requires authentication.</strong> In GitHub Actions use <code>GITHUB_TOKEN</code>; locally use a token with package read permission and the matching GitHub actor.</div>
+<section class="section"><h2>Maven</h2><pre><code>{html.escape(maven)}</code></pre></section>
+<section class="section"><h2>Stable version lookup</h2><p>Bash:</p><pre><code>{html.escape(bash)}</code></pre><p>PowerShell:</p><pre><code>{html.escape(ps)}</code></pre><p>Structured metadata: <a href="{html.escape(join_url(base, 'releases/stable.json'))}">stable.json</a>.</p></section>
+'''
+    write(output / "use/index.html", shell(f"Use Bridge {version}", "Use the current stable Bridge Maven coordinates and lookup endpoints.", use_body, "use/", base, canonical_base))
 
     host = ", ".join(str(v) for v in compatibility["host_jvm"]["pull_request_blocking"])
     classfiles = ", ".join(str(v) for v in compatibility["class_files"]["qualification_targets"])
-    compat_body = f'''<h1>Compatibility</h1><p>Bridge support claims are evidence-backed. Stable {html.escape(version)} passed the release qualification associated with its published release.</p><table><tr><th>State</th><th>Area</th><th>Qualified envelope</th></tr><tr><td><span class="dot"></span>Qualified</td><td>Host JVMs</td><td>{html.escape(host)}</td></tr><tr><td><span class="dot"></span>Qualified policy</td><td>Class-file inputs</td><td>Java {html.escape(classfiles)}</td></tr><tr><td><span class="dot"></span>Qualified</td><td>Product bytecode baseline</td><td>Java {contract['toolchain']['java_bytecode_release']}</td></tr></table><p>For exact machine policy and release evidence, see <a href="{base}/compatibility.json">compatibility.json</a> and the <a href="{stable['qualification']}">release qualification evidence</a>.</p>'''
-    write(output / "compatibility/index.html", shell("Compatibility", compat_body, base))
+    compat_body = f'''
+<h1>Compatibility</h1>
+<p>Bridge support claims are evidence-backed. Stable {html.escape(version)} passed the release qualification associated with its published release.</p>
+<div class="table-scroll"><table><caption>Qualified Bridge {html.escape(version)} compatibility envelope</caption><thead><tr><th scope="col">State</th><th scope="col">Area</th><th scope="col">Qualified envelope</th></tr></thead><tbody>
+<tr><td><span class="status-dot status-pass" aria-hidden="true"></span>Qualified</td><td>Host JVMs</td><td>{html.escape(host)}</td></tr>
+<tr><td><span class="status-dot status-pass" aria-hidden="true"></span>Qualified policy</td><td>Class-file inputs</td><td>Java {html.escape(classfiles)}</td></tr>
+<tr><td><span class="status-dot status-pass" aria-hidden="true"></span>Qualified</td><td>Product bytecode baseline</td><td>Java {contract['toolchain']['java_bytecode_release']}</td></tr>
+</tbody></table></div>
+<p>For exact machine policy and release evidence, see <a href="{html.escape(join_url(base, 'compatibility.json'))}">compatibility.json</a> and the <a href="{html.escape(stable['qualification'])}">release qualification evidence</a>.</p>
+'''
+    write(output / "compatibility/index.html", shell("Compatibility", "Evidence-backed Bridge JVM and class-file compatibility.", compat_body, "compatibility/", base, canonical_base))
 
-    rows = ''.join(f'''<tr><td><code>{html.escape(name)}</code></td><td><a href="{html.escape(item['download_url'])}">Download</a></td><td><code>{html.escape(item['sha256'])}</code></td></tr>''' for name,item in stable["artifacts"].items())
-    release_body = f'''<h1>Bridge {html.escape(version)}</h1><p>{html.escape(stable['summary'])}</p><div class="card"><h2>Recommended consumption</h2><p>Use the canonical Maven coordinates shown on the <a href="{base}/use/">Use Bridge</a> page. Standalone release JARs are available below for inspection or tooling that needs them directly.</p></div><table><tr><th>Artifact</th><th>Download</th><th>SHA-256</th></tr>{rows}</table><p><a href="{stable['qualification']}">Qualification evidence</a></p>'''
-    write(output / f"releases/{version}/index.html", shell(f"Release {version}", release_body, base))
-    write(output / "releases/index.html", shell("Releases", f'''<h1>Bridge releases</h1><p><a href="{base}/releases/{html.escape(version)}/">Bridge {html.escape(version)}</a> — current stable</p><p>GitHub remains the source/contribution record; usage and release information stay on this site.</p>''', base))
+    release_rows = ''.join(
+        f'''<tr><th scope="row"><code>{html.escape(item['name'])}</code></th><td><a href="{html.escape(item['download_url'])}">Download</a></td><td><code>{html.escape(item['sha256'])}</code></td></tr>'''
+        for item in stable["artifacts"].values()
+    )
+    release_body = f'''
+<h1>Bridge {html.escape(version)}</h1>
+<p>{html.escape(stable['summary'])}</p>
+<div class="card"><h2>Recommended consumption</h2><p>Use the canonical Maven coordinates shown on the <a href="{html.escape(join_url(base, 'use/'))}">Use Bridge</a> page. Standalone JARs below are provided for inspection or tooling that needs direct artifacts.</p></div>
+<div class="table-scroll"><table><caption>Bridge {html.escape(version)} standalone artifacts</caption><thead><tr><th scope="col">Artifact</th><th scope="col">Download</th><th scope="col">SHA-256</th></tr></thead><tbody>{release_rows}</tbody></table></div>
+<p><a href="{html.escape(stable['qualification'])}">Qualification evidence</a></p>
+'''
+    write(output / f"releases/{version}/index.html", shell(f"Release {version}", f"Bridge {version} release artifacts, checksums, and qualification evidence.", release_body, f"releases/{version}/", base, canonical_base))
 
-    write(output / "llms.txt", f'''# Bridge\n\nCanonical human entry point: {base}/\nUse Bridge: {base}/use/\nCompatibility: {base}/compatibility/\nCurrent stable JSON: {base}/releases/stable.json\nCurrent stable version: {base}/releases/stable.txt\nCurrent stable primary artifact URL: {base}/releases/stable-url.txt\nProject contract: {base}/project.json\nCompatibility policy: {base}/compatibility.json\nRepository: https://github.com/{contract['repository']}\nUpstream: https://github.com/{contract['upstream_repository']}\n\nPrefer Pages endpoints over scraping GitHub release pages.\n''')
+    releases_body = f'''
+<h1>Bridge releases</h1>
+<div class="card"><h2>Current stable</h2><p><a href="{html.escape(join_url(base, f'releases/{version}/'))}">Bridge {html.escape(version)}</a></p><p>{html.escape(stable['summary'])}</p></div>
+<p>GitHub remains the source and contribution record; human-friendly usage and release information stays on this site.</p>
+'''
+    write(output / "releases/index.html", shell("Releases", "Bridge stable releases and release evidence.", releases_body, "releases/", base, canonical_base))
+
+    accessibility_body = f'''
+<h1>Accessibility</h1>
+<p>This public site targets <strong>WCAG 2.2 Level AA</strong> and is designed to align with the Revised Section 508 web accessibility criteria where applicable.</p>
+<p>Automated testing is evidence, not certification. Candidate releases are checked with Playwright across desktop and mobile browser profiles, axe accessibility rules, Lighthouse quality budgets, deterministic contract checks, and link validation.</p>
+<h2>Interaction and display</h2>
+<ul><li>Keyboard-visible focus and a skip link are provided.</li><li>Primary navigation remains available at narrow widths.</li><li>Theme choices support System, Light, and Dark; explicit choices persist locally.</li><li>The layout supports reflow to 320 CSS pixels without intentional horizontal page scrolling.</li><li>Reduced-motion and forced-colors preferences are respected.</li></ul>
+<h2>Report a problem</h2>
+<p>Bridge Issues are restricted to repository collaborators. Other users can report a reproducible accessibility problem through the repository's available contribution/contact channels.</p>
+<p>See the <a href="https://github.com/SupraCraft/Bridge">Bridge source repository</a> for project context and contribution information.</p>
+'''
+    write(output / "accessibility/index.html", shell("Accessibility", "Bridge public-site accessibility target, testing posture, and interaction support.", accessibility_body, "accessibility/", base, canonical_base))
+
+    write(output / "llms.txt", f'''# Bridge\n\nCanonical human entry point: {join_url(canonical_base)}\nUse Bridge: {join_url(canonical_base, 'use/')}\nCompatibility: {join_url(canonical_base, 'compatibility/')}\nAccessibility: {join_url(canonical_base, 'accessibility/')}\nCurrent stable JSON: {join_url(canonical_base, 'releases/stable.json')}\nCurrent stable version: {join_url(canonical_base, 'releases/stable.txt')}\nCurrent stable primary artifact URL: {join_url(canonical_base, 'releases/stable-url.txt')}\nProject contract: {join_url(canonical_base, 'project.json')}\nCompatibility policy: {join_url(canonical_base, 'compatibility.json')}\nRepository: https://github.com/{contract['repository']}\nUpstream: https://github.com/{contract['upstream_repository']}\n\nPrefer Pages endpoints over scraping GitHub release pages.\n''')
 
 
-if __name__ == "__main__": main()
+if __name__ == "__main__":
+    main()
