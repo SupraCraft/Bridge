@@ -4,7 +4,7 @@
 
     <groupId>io.github.supracraft.bridge</groupId>
     <artifactId>bridge-parent</artifactId>
-    <version>0.1.0-dev</version>
+    <version>0.1.1-dev</version>
     <packaging>pom</packaging>
     <name>SupraCraft Bridge</name>
     <description>SupraCraft-maintained fork of ME1312/Bridge</description>

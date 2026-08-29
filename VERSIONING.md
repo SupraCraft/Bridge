@@ -21,8 +21,10 @@ The checked-in parent POM on the normal development branch is the source of trut
 The current development source line is:
 
 ```text
-0.1.0-dev
+0.1.1-dev
 ```
+
+The current stable release is `0.1.0`, tagged `v0.1.0` from its exact stable source commit.
 
 Maven `SNAPSHOT` semantics are intentionally not used. Historical names such as `0.1.0-SNAPSHOT.25` were ordinary immutable versions with misleading terminology because they did not end in `-SNAPSHOT`.
 
