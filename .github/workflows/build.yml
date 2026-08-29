@@ -3,7 +3,6 @@ name: build-and-publish
 on:
   push:
     branches: [main, master]
-    tags: ["v*"]
     paths:
       - 'pom.xml'
       - 'bridge*/**'
@@ -26,13 +25,7 @@ on:
       - 'README.md'
       - 'VERSIONING.md'
       - 'ARTIFACT_IDENTITY.md'
-  release:
-    types: [published]
   workflow_dispatch:
-    inputs:
-      release_tag:
-        description: "Tag to publish (for manual runs)"
-        required: false
 
 concurrency:
   group: build-${{ github.workflow }}-${{ github.ref }}
@@ -63,7 +56,17 @@ jobs:
             exit 1
           fi
           grep -F '<groupId>io.github.supracraft.bridge</groupId>' pom.xml
-          grep -F '<version>0.1.0-dev</version>' pom.xml
+          SOURCE_VERSION="$(python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          root = ET.parse('pom.xml').getroot()
+          ns = {'m': 'http://maven.apache.org/POM/4.0.0'}
+          print(root.find('m:version', ns).text.strip())
+          PY
+          )"
+          case "$SOURCE_VERSION" in
+            *-dev) ;;
+            *) echo "Ordinary build source version must end in -dev; got ${SOURCE_VERSION}" >&2; exit 1 ;;
+          esac
 
       - name: Set up JDK
         uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287
@@ -77,28 +80,20 @@ jobs:
           ./mvnw --version | tee /tmp/maven-version.txt
           grep -F 'Apache Maven 3.9.16' /tmp/maven-version.txt
 
-      - name: Derive version
+      - name: Derive immutable development version
         id: version
-        env:
-          RELEASE_TAG: ${{ github.event.inputs.release_tag || '' }}
         run: |
-          if [[ -n "${RELEASE_TAG}" ]]; then
-            VER="${RELEASE_TAG#v}"
-          elif [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-            VER="${GITHUB_REF_NAME#v}"
-          else
-            SOURCE_VERSION="$(python3 - <<'PY'
+          SOURCE_VERSION="$(python3 - <<'PY'
           import xml.etree.ElementTree as ET
           root = ET.parse('pom.xml').getroot()
           ns = {'m': 'http://maven.apache.org/POM/4.0.0'}
           print(root.find('m:version', ns).text.strip())
           PY
           )"
-            case "${SOURCE_VERSION}" in
-              *-dev) VER="${SOURCE_VERSION}.${GITHUB_RUN_NUMBER}" ;;
-              *) echo "Non-release source version must end in -dev; got ${SOURCE_VERSION}" >&2; exit 1 ;;
-            esac
-          fi
+          case "$SOURCE_VERSION" in
+            *-dev) VER="${SOURCE_VERSION}.${GITHUB_RUN_NUMBER}" ;;
+            *) echo "Ordinary build source version must end in -dev; got ${SOURCE_VERSION}" >&2; exit 1 ;;
+          esac
           echo "VALUE=$VER" >> "$GITHUB_OUTPUT"
 
       - name: Set project version
@@ -154,6 +149,7 @@ jobs:
           cat > BUILD-METADATA.properties <<EOF
           group=io.github.supracraft.bridge
           version=${{ steps.version.outputs.VALUE }}
+          release.kind=development
           source.repository=SupraCraft/Bridge
           upstream.repository=ME1312/Bridge
           git.commit=${SOURCE_SHA}
@@ -201,7 +197,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       packages: write
     steps:
       - name: Checkout
@@ -240,7 +236,7 @@ jobs:
             test -s "build/$artifact/$artifact-$version.jar"
           done
 
-      - name: Publish tested artifacts to GitHub Packages
+      - name: Publish tested development artifacts to GitHub Packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >-
@@ -248,15 +244,3 @@ jobs:
           '${{ needs.build.outputs.version }}'
           github
           "https://maven.pkg.github.com/${BRIDGE_OWNER}/Bridge"
-
-      - name: Attach tested SupraCraft provenance assets to release
-        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
-        uses: softprops/action-gh-release@7c4723f7a335432393329f8f1c564994ce50185d
-        with:
-          tag_name: ${{ inputs.release_tag || github.ref_name }}
-          files: |
-            tested-evidence/dist/*
-            tested-evidence/BUILD-METADATA.properties
-            tested-evidence/REPRODUCIBILITY.properties
-            tested-evidence/SHA256SUMS
-          fail_on_unmatched_files: true
