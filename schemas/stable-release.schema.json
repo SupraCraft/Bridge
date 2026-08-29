@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bridge-stable-release/1",
+  "title": "Bridge stable release manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "version",
+    "tag",
+    "candidate",
+    "candidate_status",
+    "target_branch",
+    "publication",
+    "immutable"
+  ],
+  "properties": {
+    "schema": {"const": "bridge-stable-release/1"},
+    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "tag": {"type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "candidate": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+-rc\\.[1-9][0-9]*$"},
+    "candidate_status": {"type": "string", "pattern": "^release-candidates/[0-9]+\\.[0-9]+\\.[0-9]+-rc\\.[1-9][0-9]*\\.json$"},
+    "target_branch": {"const": "master"},
+    "publication": {"const": "github-packages"},
+    "immutable": {"const": true}
+  }
+}
