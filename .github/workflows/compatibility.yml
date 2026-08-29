@@ -67,6 +67,16 @@ jobs:
           javap -verbose -classpath build/bridge/bridge-0.1.0-dev.jar bridge.Bridge > /tmp/bridge-javap.txt
           grep -F 'major version: 65' /tmp/bridge-javap.txt
 
+      - name: Verify transformed fixtures with JDK Class-File API
+        if: matrix.java != '21'
+        run: >-
+          java scripts/VerifyClassFiles.java
+          build/bridge-test/classes
+          build/bridge/classes
+          build/bridge-asm/classes
+          build/bridge-plugin/classes
+          build/bridge-test/classes
+
   next-jdk-advisory:
     name: host-jdk-27-ea-advisory
     runs-on: ubuntu-latest
@@ -89,3 +99,12 @@ jobs:
 
       - name: Advisory reactor verification
         run: ./mvnw -B verify
+
+      - name: Verify transformed fixtures with JDK Class-File API
+        run: >-
+          java scripts/VerifyClassFiles.java
+          build/bridge-test/classes
+          build/bridge/classes
+          build/bridge-asm/classes
+          build/bridge-plugin/classes
+          build/bridge-test/classes
