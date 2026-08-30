@@ -5,6 +5,7 @@ on:
     branches: [master]
     paths:
       - 'PROJECT_CONTRACT.json'
+      - 'PUBLIC_SURFACE.json'
       - 'COMPATIBILITY.json'
       - 'GITHUB_METADATA.json'
       - 'CURRENT_STABLE.json'
@@ -21,6 +22,7 @@ on:
     branches: [master]
     paths:
       - 'PROJECT_CONTRACT.json'
+      - 'PUBLIC_SURFACE.json'
       - 'COMPATIBILITY.json'
       - 'GITHUB_METADATA.json'
       - 'CURRENT_STABLE.json'
@@ -54,6 +56,14 @@ jobs:
         python3 ./scripts/check-public-site.py
         --site-dir build/public-site
         --navigation-base http://127.0.0.1:4173/
+        && curl -fsSL
+        https://raw.githubusercontent.com/SupraShellScripts/github-ops-lab/5af6889bf31a86352f20a5963ed18f4ceaa741d1/scripts/public-web/validate-surface-contract.py
+        -o build/validate-surface-contract.py
+        && python3 build/validate-surface-contract.py
+        --contract PUBLIC_SURFACE.json
+        --site-dir build/public-site
+        --navigation-base http://127.0.0.1:4173/
+        --evidence build/public-surface-conformance.json
       lychee_args: >-
         --verbose
         --no-progress
@@ -65,3 +75,9 @@ jobs:
         './README.md'
         './docs/**/*.md'
         './build/public-site/**/*.html'
+      evidence_paths: |
+        build/playwright-report
+        build/playwright-results
+        build/lighthouse
+        build/public-surface-conformance.json
+        lychee/out.md
