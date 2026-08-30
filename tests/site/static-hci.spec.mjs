@@ -99,7 +99,9 @@ for (const route of routes) {
     }
 
     await assertPrimaryTargets(page, `${testInfo.project.name} ${route}`);
-    await assertKeyboardFocusPath(page, `${testInfo.project.name} ${route}`);
+    if (testInfo.project.name.startsWith('desktop-')) {
+      await assertKeyboardFocusPath(page, `${testInfo.project.name} ${route}`);
+    }
 
     const icons = page.locator('.theme-icon');
     await expect(icons, `${route} theme icons`).toHaveCount(3);
@@ -115,3 +117,10 @@ for (const route of routes) {
     }
   });
 }
+
+test('320px responsive layout keeps keyboard-primary controls reachable and unobscured', async ({ page }, testInfo) => {
+  test.skip(!testInfo.project.name.startsWith('desktop-'), 'Playwright mobile device emulation does not model OS-level external-keyboard focus scrolling');
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto(routeUrl('/'), { waitUntil: 'networkidle' });
+  await assertKeyboardFocusPath(page, `${testInfo.project.name} 320px homepage`);
+});
