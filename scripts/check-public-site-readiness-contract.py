@@ -5,6 +5,10 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+REUSABLE_READINESS_WORKFLOW = (
+    "SupraShellScripts/github-ops-lab/.github/workflows/public-site-readiness.yml"
+    "@a81cede6ae6c8d460c2922aa35103137633abddc"
+)
 
 
 def text(path):
@@ -33,6 +37,7 @@ def main():
     assert validation["public_site_builder"] == "scripts/build-public-site.py"
     assert validation["public_site_check"] == "scripts/check-public-site.py"
     assert validation["public_site_readiness_workflow"] == ".github/workflows/public-site-readiness.yml"
+    assert validation["public_site_readiness_reusable_workflow"] == REUSABLE_READINESS_WORKFLOW
     assert validation["public_site_playwright_config"] == "playwright.config.mjs"
     assert validation["public_site_browser_test"] == "tests/site/public-site.spec.mjs"
     assert validation["public_site_accessibility_engine"] == "@axe-core/playwright"
@@ -90,16 +95,30 @@ def main():
 
     readiness = text(".github/workflows/public-site-readiness.yml")
     pages = text(".github/workflows/pages.yml")
-    for workflow in (readiness, pages):
-        assert "npm install --ignore-scripts --no-audit --no-fund" in workflow
-        assert "npx playwright install --with-deps chromium firefox webkit" in workflow
-        assert "npm run site:test" in workflow
-        assert "npm run site:lighthouse" in workflow
-        assert "lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8" in workflow
-        assert "./build/public-site/**/*.html" in workflow
-        assert "./docs/**/*.html" not in workflow
+
+    # PR/push candidate qualification consumes the public reusable mechanics by
+    # immutable SHA while retaining Bridge-owned commands, routes, and specs.
+    assert f"uses: {REUSABLE_READINESS_WORKFLOW}" in readiness
+    assert "build_command:" in readiness
+    assert "validate_command:" in readiness
+    assert "lychee_args:" in readiness
     assert "--base-url http://127.0.0.1:4173/" in readiness
     assert "--navigation-base http://127.0.0.1:4173/" in readiness
+    assert "./build/public-site/**/*.html" in readiness
+    assert "./docs/**/*.html" not in readiness
+
+    # Production Pages remains an independent local authority and repeats the
+    # full candidate gates before it can create/deploy the Pages artifact.
+    for token in (
+        "npm install --ignore-scripts --no-audit --no-fund",
+        "npx playwright install --with-deps chromium firefox webkit",
+        "npm run site:test",
+        "npm run site:lighthouse",
+        "lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8",
+        "./build/public-site/**/*.html",
+    ):
+        assert token in pages
+    assert "./docs/**/*.html" not in pages
     assert 'SITE_BASE_URL: ${{ steps.deployment.outputs.page_url }}' in pages
     assert '--grep "primary Bridge user journeys"' in pages
 
