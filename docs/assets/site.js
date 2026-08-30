@@ -102,6 +102,7 @@
 
       const face = document.createElement('span');
       face.className = 'theme-option-face';
+      face.style.pointerEvents = 'none';
       face.innerHTML = option.icon;
 
       const tooltip = document.createElement('span');
