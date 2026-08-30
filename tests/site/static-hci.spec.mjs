@@ -3,13 +3,15 @@ import { test, expect } from '@playwright/test';
 const siteBaseUrl = new URL(process.env.SITE_BASE_URL || 'http://127.0.0.1:4173/');
 const routes = ['/', '/use/', '/compatibility/', '/releases/', '/accessibility/'];
 const genericStandaloneName = /^(?:click here|here|more|read more|learn more|link|button|open)$/i;
+const primarySelector = '.brand, nav[aria-label="Primary"] a, .theme-option input, a.button';
+const keyboardPrimarySelector = '.brand, nav[aria-label="Primary"] a, .theme-option input:checked, a.button';
 
 function routeUrl(route) {
   return new URL(route.replace(/^\/+/, ''), siteBaseUrl).toString();
 }
 
-async function assertPrimaryTargetsAndFocus(page, label) {
-  const controls = page.locator('.brand, nav[aria-label="Primary"] a, .theme-option input, a.button');
+async function assertPrimaryTargets(page, label) {
+  const controls = page.locator(primarySelector);
   expect(await controls.count(), `${label} should expose declared primary controls`).toBeGreaterThan(0);
 
   for (let index = 0; index < await controls.count(); index += 1) {
@@ -21,24 +23,51 @@ async function assertPrimaryTargetsAndFocus(page, label) {
     });
     expect(geometry.width, `${label} primary control ${index} width`).toBeGreaterThanOrEqual(44);
     expect(geometry.height, `${label} primary control ${index} height`).toBeGreaterThanOrEqual(44);
-
-    if (await control.evaluate(node => node.tabIndex >= 0)) {
-      await control.focus();
-      await expect(control, `${label} primary control ${index} focus`).toBeFocused();
-      const focusGeometry = await control.evaluate(node => {
-        const rect = node.getBoundingClientRect();
-        const x = Math.min(Math.max(rect.left + rect.width / 2, 0), innerWidth - 1);
-        const y = Math.min(Math.max(rect.top + rect.height / 2, 0), innerHeight - 1);
-        const top = document.elementFromPoint(x, y);
-        return {
-          inViewport: rect.bottom > 0 && rect.right > 0 && rect.top < innerHeight && rect.left < innerWidth,
-          coveredAtCenter: Boolean(top && top !== node && !node.contains(top) && !top.contains(node)),
-        };
-      });
-      expect(focusGeometry.inViewport, `${label} primary control ${index} must remain in the viewport when focused`).toBe(true);
-      expect(focusGeometry.coveredAtCenter, `${label} primary control ${index} must not be obscured at its focus point`).toBe(false);
-    }
   }
+}
+
+async function assertKeyboardFocusPath(page, label) {
+  const expected = await page.locator(keyboardPrimarySelector).count();
+  expect(expected, `${label} should expose keyboard-primary controls`).toBeGreaterThan(0);
+
+  await page.evaluate(() => {
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    window.scrollTo(0, 0);
+  });
+
+  const seen = new Set();
+  const maxTabs = Math.max(24, expected * 3);
+  for (let index = 0; index < maxTabs && seen.size < expected; index += 1) {
+    await page.keyboard.press('Tab');
+    const focus = await page.evaluate(selector => {
+      const node = document.activeElement;
+      if (!(node instanceof HTMLElement) || !node.matches(selector)) return { primary: false };
+
+      const rect = node.getBoundingClientRect();
+      const left = Math.max(rect.left, 0);
+      const right = Math.min(rect.right, innerWidth);
+      const topEdge = Math.max(rect.top, 0);
+      const bottom = Math.min(rect.bottom, innerHeight);
+      const inViewport = right > left && bottom > topEdge;
+      const x = inViewport ? (left + right) / 2 : 0;
+      const y = inViewport ? (topEdge + bottom) / 2 : 0;
+      const top = inViewport ? document.elementFromPoint(x, y) : null;
+      const text = (node.getAttribute('aria-label') || node.textContent || '').replace(/\s+/g, ' ').trim();
+      return {
+        primary: true,
+        identity: [node.tagName, node.getAttribute('href') || '', node.getAttribute('name') || '', node.getAttribute('value') || '', text].join('|'),
+        inViewport,
+        coveredAtVisibleCenter: Boolean(top && top !== node && !node.contains(top) && !top.contains(node)),
+      };
+    }, keyboardPrimarySelector);
+
+    if (!focus.primary) continue;
+    expect(focus.inViewport, `${label} keyboard-focused ${focus.identity} must be visible in the viewport`).toBe(true);
+    expect(focus.coveredAtVisibleCenter, `${label} keyboard-focused ${focus.identity} must not be obscured at its visible center`).toBe(false);
+    seen.add(focus.identity);
+  }
+
+  expect(seen.size, `${label} keyboard traversal should reach every declared primary tab stop`).toBe(expected);
 }
 
 for (const route of routes) {
@@ -69,7 +98,8 @@ for (const route of routes) {
       expect(genericStandaloneName.test(name), `${route} standalone action ${index} should not use a context-free generic label: ${name}`).toBe(false);
     }
 
-    await assertPrimaryTargetsAndFocus(page, `${testInfo.project.name} ${route}`);
+    await assertPrimaryTargets(page, `${testInfo.project.name} ${route}`);
+    await assertKeyboardFocusPath(page, `${testInfo.project.name} ${route}`);
 
     const icons = page.locator('.theme-icon');
     await expect(icons, `${route} theme icons`).toHaveCount(3);
