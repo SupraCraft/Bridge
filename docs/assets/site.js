@@ -108,12 +108,42 @@
       const tooltip = document.createElement('span');
       tooltip.className = 'theme-tooltip';
       tooltip.setAttribute('aria-hidden', 'true');
+      tooltip.style.pointerEvents = 'auto';
       tooltip.textContent = option.label;
       face.append(tooltip);
+
+      const dismissTooltip = () => {
+        tooltip.style.opacity = '0';
+        tooltip.style.visibility = 'hidden';
+        label.dataset.tooltipDismissed = 'true';
+      };
+      const restoreTooltip = () => {
+        tooltip.style.removeProperty('opacity');
+        tooltip.style.removeProperty('visibility');
+        delete label.dataset.tooltipDismissed;
+      };
+      input.addEventListener('focus', restoreTooltip);
+      input.addEventListener('blur', restoreTooltip);
+      label.addEventListener('mouseenter', restoreTooltip);
+      label.addEventListener('mouseleave', () => {
+        if (!label.matches(':focus-within')) restoreTooltip();
+      });
+      label._dismissThemeTooltip = dismissTooltip;
 
       label.append(input, face);
       options.append(label);
     }
+
+    fieldset.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      fieldset.querySelectorAll('.theme-option').forEach(label => {
+        if (label.matches(':hover') || label.matches(':focus-within')) label._dismissThemeTooltip?.();
+      });
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      fieldset.querySelectorAll('.theme-option:hover').forEach(label => label._dismissThemeTooltip?.());
+    });
 
     fieldset.append(options);
     wrapper.replaceWith(fieldset);
