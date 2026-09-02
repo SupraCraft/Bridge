@@ -63,7 +63,7 @@
     "public_site_builder": "scripts/build-public-site.py",
     "public_site_check": "scripts/check-public-site.py",
     "public_site_readiness_workflow": ".github/workflows/public-site-readiness.yml",
-    "public_site_readiness_reusable_workflow": "SupraShellScripts/github-ops-lab/.github/workflows/public-site-readiness.yml@a81cede6ae6c8d460c2922aa35103137633abddc",
+    "public_site_surface_validator": "scripts/public-web/validate-surface-contract.py",
     "public_site_playwright_config": "playwright.config.mjs",
     "public_site_browser_test": "tests/site/public-site.spec.mjs",
     "public_site_accessibility_engine": "@axe-core/playwright",

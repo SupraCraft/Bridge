@@ -5,10 +5,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-REUSABLE_READINESS_WORKFLOW = (
-    "SupraShellScripts/github-ops-lab/.github/workflows/public-site-readiness.yml"
-    "@a81cede6ae6c8d460c2922aa35103137633abddc"
-)
+LOCAL_SURFACE_VALIDATOR = "scripts/public-web/validate-surface-contract.py"
 
 
 def text(path):
@@ -26,6 +23,7 @@ def main():
         "playwright.config.mjs",
         "lighthouserc.cjs",
         "tests/site/public-site.spec.mjs",
+        LOCAL_SURFACE_VALIDATOR,
         ".github/workflows/public-site-readiness.yml",
         ".github/workflows/pages.yml",
     ]
@@ -37,7 +35,8 @@ def main():
     assert validation["public_site_builder"] == "scripts/build-public-site.py"
     assert validation["public_site_check"] == "scripts/check-public-site.py"
     assert validation["public_site_readiness_workflow"] == ".github/workflows/public-site-readiness.yml"
-    assert validation["public_site_readiness_reusable_workflow"] == REUSABLE_READINESS_WORKFLOW
+    assert validation["public_site_surface_validator"] == LOCAL_SURFACE_VALIDATOR
+    assert "public_site_readiness_reusable_workflow" not in validation
     assert validation["public_site_playwright_config"] == "playwright.config.mjs"
     assert validation["public_site_browser_test"] == "tests/site/public-site.spec.mjs"
     assert validation["public_site_accessibility_engine"] == "@axe-core/playwright"
@@ -96,20 +95,12 @@ def main():
     readiness = text(".github/workflows/public-site-readiness.yml")
     pages = text(".github/workflows/pages.yml")
 
-    # PR/push candidate qualification consumes the public reusable mechanics by
-    # immutable SHA while retaining Bridge-owned commands, routes, and specs.
-    assert f"uses: {REUSABLE_READINESS_WORKFLOW}" in readiness
-    assert "build_command:" in readiness
-    assert "validate_command:" in readiness
-    assert "lychee_args:" in readiness
-    assert "--base-url http://127.0.0.1:4173/" in readiness
-    assert "--navigation-base http://127.0.0.1:4173/" in readiness
-    assert "./build/public-site/**/*.html" in readiness
-    assert "./docs/**/*.html" not in readiness
-
-    # Production Pages remains an independent local authority and repeats the
-    # full candidate gates before it can create/deploy the Pages artifact.
+    # Candidate qualification is consumer-owned and exercises the same real
+    # browser/accessibility/Lighthouse/link mechanics as the production path.
     for token in (
+        "python3 ./scripts/build-public-site.py --output build/public-site --base-url http://127.0.0.1:4173/",
+        "python3 ./scripts/check-public-site.py --site-dir build/public-site --navigation-base http://127.0.0.1:4173/",
+        "python3 ./scripts/public-web/validate-surface-contract.py",
         "npm install --ignore-scripts --no-audit --no-fund",
         "npx playwright install --with-deps chromium firefox webkit",
         "npm run site:test",
@@ -117,7 +108,23 @@ def main():
         "lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8",
         "./build/public-site/**/*.html",
     ):
+        assert token in readiness
+    assert "github-ops-lab" not in readiness
+    assert "./docs/**/*.html" not in readiness
+
+    # Production Pages remains an independent local authority and repeats the
+    # candidate gates before it can create/deploy the Pages artifact.
+    for token in (
+        "npm install --ignore-scripts --no-audit --no-fund",
+        "npx playwright install --with-deps chromium firefox webkit",
+        "npm run site:test",
+        "npm run site:lighthouse",
+        "lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8",
+        "python3 ./scripts/public-web/validate-surface-contract.py",
+        "./build/public-site/**/*.html",
+    ):
         assert token in pages
+    assert "github-ops-lab" not in pages
     assert "./docs/**/*.html" not in pages
     assert 'SITE_BASE_URL: ${{ steps.deployment.outputs.page_url }}' in pages
     assert '--grep "primary Bridge user journeys"' in pages

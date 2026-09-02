@@ -13,21 +13,17 @@ The Bridge GitHub Pages site is a release interface for users, developers, autom
 
 The browser/accessibility/Lighthouse/link tooling is standard upstream tooling. Project code should contain Bridge-specific journeys and contracts, not a bespoke browser framework.
 
-## Reusable candidate mechanics
+## Consumer-owned candidate mechanics
 
-The PR/push candidate workflow at `.github/workflows/public-site-readiness.yml` is intentionally thin. It calls the public reusable workflow:
+The PR/push candidate workflow at `.github/workflows/public-site-readiness.yml` owns its execution mechanics in this repository. It checks out the candidate, builds and validates the exact candidate site bytes, runs the local public-surface conformance validator, installs the pinned browser QA dependencies, executes the Playwright browser/accessibility matrix and Lighthouse budgets, runs the pinned Lychee action, and uploads diagnostics.
 
-```text
-SupraShellScripts/github-ops-lab/.github/workflows/public-site-readiness.yml@a81cede6ae6c8d460c2922aa35103137633abddc
-```
+The deterministic public-surface conformance validator is vendored at `scripts/public-web/validate-surface-contract.py`. Its migration provenance is retained in the pull-request/Git history; runtime qualification no longer depends on fetching validator bytes or invoking a reusable workflow from another repository.
 
-The reference is pinned to an immutable reviewed commit. The reusable workflow owns generic execution mechanics such as SHA-pinned checkout, Node setup, dependency/browser installation, Playwright execution, Lighthouse execution, Lychee invocation, and evidence upload.
+Bridge continues to own its exact candidate-build command, deterministic validation command, link-check paths/exclusions, `package.json`, Playwright configuration/specs, Lighthouse configuration, routes, browser/device matrix, accessibility assertions, themes, and critical Maven/use/compatibility/release journeys.
 
-Bridge still owns and passes its exact candidate-build command, deterministic validation command, link-check paths/exclusions, `package.json`, Playwright configuration/specs, Lighthouse configuration, routes, browser/device matrix, accessibility assertions, themes, and critical Maven/use/compatibility/release journeys. The reusable workflow is therefore not a second authority for Bridge release semantics.
+The production Pages workflow remains local and independently repeats the candidate gates before constructing/deploying the Pages artifact, then performs deterministic and real-browser smoke against the deployed site.
 
-The production Pages workflow remains local and independently repeats the candidate gates before constructing/deploying the Pages artifact, then performs deterministic and real-browser smoke against the deployed site. Reusing PR/push mechanics does not reduce the independence of the publication gate.
-
-The immutable reusable-workflow identity is recorded in `PROJECT_CONTRACT.json` and enforced by `scripts/check-public-site-readiness-contract.py` so a floating ref or silent return to duplicated mechanics is detectable.
+The consumer-owned readiness wiring and local validator identity are recorded in `PROJECT_CONTRACT.json` and enforced by `scripts/check-public-site-readiness-contract.py`, so a silent return to external runtime readiness dependencies is detectable.
 
 ## Blocking browser/device envelope
 
