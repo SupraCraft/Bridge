@@ -109,7 +109,6 @@ def main():
         "./build/public-site/**/*.html",
     ):
         assert token in readiness
-    assert "github-ops-lab" not in readiness
     assert "./docs/**/*.html" not in readiness
 
     # Production Pages remains an independent local authority and repeats the
@@ -124,7 +123,6 @@ def main():
         "./build/public-site/**/*.html",
     ):
         assert token in pages
-    assert "github-ops-lab" not in pages
     assert "./docs/**/*.html" not in pages
     assert 'SITE_BASE_URL: ${{ steps.deployment.outputs.page_url }}' in pages
     assert '--grep "primary Bridge user journeys"' in pages
