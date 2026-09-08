@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.2.0",
+  "repository": "SupraCraft/Bridge",
+  "description": "SupraCraft-maintained Bridge fork: post-compile Maven plugin and bytecode library for Java transformation tooling.",
+  "homepage": "https://supracraft.github.io/Bridge/",
+  "topics": [
+    "asm",
+    "bytecode",
+    "bytecode-manipulation",
+    "java",
+    "maven",
+    "maven-plugin",
+    "plugin",
+    "recompiler",
+    "reproducible-builds"
+  ],
+  "pages": {
+    "expected_enabled": true,
+    "url": "https://supracraft.github.io/Bridge/",
+    "source": "github-actions",
+    "builder": "scripts/build-public-site.py",
+    "workflow": ".github/workflows/pages.yml"
+  },
+  "brand": {
+    "organization": "SupraCraft",
+    "contract_version": "0.1.0-candidate",
+    "profile": "BRAND_PROFILE.json",
+    "manifest": "docs/assets/brand/brand.json",
+    "icon": "docs/assets/brand/icon.svg",
+    "hero": "docs/assets/brand/hero.svg",
+    "guidelines": "docs/brand-guidelines.md"
+  },
+  "upstream_repository": "ME1312/Bridge"
+}

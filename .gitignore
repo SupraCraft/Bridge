@@ -1,0 +1,29 @@
+# IDE / OS metadata
+.idea/
+.vscode/
+*.iml
+.DS_Store
+.DS_STORE
+Thumbs.db
+*.swp
+*.swo
+
+# Build outputs
+**/target/
+**/build/
+/out/
+/artifacts/
+/javadoc/
+
+# Local tooling
+.m2/
+
+# Logs / diagnostics
+*.log
+hs_err_pid*.log
+replay_pid*.log
+
+# Coverage
+/coverage/
+jacoco.exec
+*.ec

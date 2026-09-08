@@ -1,0 +1,2 @@
+# branch	expected-head-sha	evidence
+modernize/artifact-identity	adf5f52ccbb3d928c748339eeb8269531e2ff175	PR #4 closed unmerged as superseded after the canonical identity work was recreated from current master

@@ -1,0 +1,178 @@
+name: build
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'pom.xml'
+      - 'bridge*/**'
+      - 'scripts/**'
+      - 'mvnw'
+      - 'mvnw.cmd'
+      - '.mvn/wrapper/**'
+      - '.github/workflows/build.yml'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'pom.xml'
+      - 'bridge*/**'
+      - 'scripts/**'
+      - 'mvnw'
+      - 'mvnw.cmd'
+      - '.mvn/wrapper/**'
+      - 'docs/**'
+      - '.github/workflows/build.yml'
+      - 'README.md'
+      - 'VERSIONING.md'
+      - 'ARTIFACT_IDENTITY.md'
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: read
+
+env:
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  SOURCE_REF: ${{ github.head_ref || github.ref }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.VALUE }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+
+      - name: Verify artifact identity
+        run: |
+          if grep -R -F --include='pom.xml' 'net.ME1312.ASM' .; then
+            echo "Legacy upstream Maven coordinates remain in active POMs."
+            exit 1
+          fi
+          grep -F '<groupId>io.github.supracraft.bridge</groupId>' pom.xml
+          SOURCE_VERSION="$(python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          root = ET.parse('pom.xml').getroot()
+          ns = {'m': 'http://maven.apache.org/POM/4.0.0'}
+          print(root.find('m:version', ns).text.strip())
+          PY
+          )"
+          case "$SOURCE_VERSION" in
+            *-dev) ;;
+            *) echo "Ordinary build source version must end in -dev; got ${SOURCE_VERSION}" >&2; exit 1 ;;
+          esac
+
+      - name: Set up JDK
+        uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Verify pinned Maven
+        run: |
+          ./mvnw --version | tee /tmp/maven-version.txt
+          grep -F 'Apache Maven 3.9.16' /tmp/maven-version.txt
+
+      - name: Derive immutable development version
+        id: version
+        run: |
+          SOURCE_VERSION="$(python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          root = ET.parse('pom.xml').getroot()
+          ns = {'m': 'http://maven.apache.org/POM/4.0.0'}
+          print(root.find('m:version', ns).text.strip())
+          PY
+          )"
+          case "$SOURCE_VERSION" in
+            *-dev) VER="${SOURCE_VERSION}.${GITHUB_RUN_NUMBER}" ;;
+            *) echo "Ordinary build source version must end in -dev; got ${SOURCE_VERSION}" >&2; exit 1 ;;
+          esac
+          echo "VALUE=$VER" >> "$GITHUB_OUTPUT"
+
+      - name: Set project version
+        run: ./mvnw -B -q org.codehaus.mojo:versions-maven-plugin:2.21.0:set -DnewVersion=${{ steps.version.outputs.VALUE }} -DgenerateBackupPoms=false
+
+      - name: Build, test, and generate SBOM
+        run: >-
+          ./mvnw -B verify
+          -Dbuild.commit=${SOURCE_SHA}
+          -Dbuild.ref=${SOURCE_REF}
+          -Dbuild.number=${GITHUB_RUN_NUMBER}
+
+      - name: Prove reproducible published JARs
+        run: >-
+          bash ./scripts/verify-reproducible-build.sh
+          '${{ steps.version.outputs.VALUE }}'
+          '${SOURCE_SHA}'
+          '${SOURCE_REF}'
+          '${GITHUB_RUN_NUMBER}'
+
+      - name: Verify produced coordinates and provenance
+        run: |
+          test "$(./mvnw -q -DforceStdout help:evaluate -Dexpression=project.groupId)" = 'io.github.supracraft.bridge'
+          test "$(./mvnw -q -DforceStdout help:evaluate -Dexpression=project.version)" = '${{ steps.version.outputs.VALUE }}'
+          unzip -p build/bridge/bridge-${{ steps.version.outputs.VALUE }}.jar META-INF/MANIFEST.MF | tr -d '\r' > /tmp/bridge-manifest.mf
+          grep -Fx 'Implementation-Vendor: SupraCraft' /tmp/bridge-manifest.mf
+          grep -Fx 'Source-Repository: SupraCraft/Bridge' /tmp/bridge-manifest.mf
+          grep -Fx 'Upstream-Repository: ME1312/Bridge' /tmp/bridge-manifest.mf
+
+      - name: Verify tested-artifact deployment locally
+        run: |
+          rm -rf /tmp/bridge-maven-repo
+          mkdir -p /tmp/bridge-maven-repo
+          bash ./scripts/deploy-tested-artifacts.sh \
+            '${{ steps.version.outputs.VALUE }}' \
+            local \
+            'file:///tmp/bridge-maven-repo'
+          base='/tmp/bridge-maven-repo/io/github/supracraft/bridge'
+          version='${{ steps.version.outputs.VALUE }}'
+          test -s "$base/bridge-parent/$version/bridge-parent-$version.pom"
+          for artifact in bridge bridge-asm bridge-plugin bridge-test; do
+            published="$base/$artifact/$version/$artifact-$version.jar"
+            built="build/$artifact/$artifact-$version.jar"
+            test -s "$published"
+            cmp "$built" "$published"
+          done
+
+      - name: Stage standalone artifacts
+        run: bash ./scripts/stage-standalone-artifacts.sh '${{ steps.version.outputs.VALUE }}'
+
+      - name: Record build metadata
+        run: |
+          cat > BUILD-METADATA.properties <<EOF
+          group=io.github.supracraft.bridge
+          version=${{ steps.version.outputs.VALUE }}
+          release.kind=development
+          source.repository=SupraCraft/Bridge
+          upstream.repository=ME1312/Bridge
+          git.commit=${SOURCE_SHA}
+          git.ref=${SOURCE_REF}
+          github.run=${GITHUB_RUN_NUMBER}
+          maven.version=3.9.16
+          maven.wrapper.version=3.3.4
+          EOF
+
+      - name: Generate checksums
+        run: sha256sum dist/* BUILD-METADATA.properties REPRODUCIBILITY.properties > SHA256SUMS
+
+      - name: Upload build evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: supracraft-bridge-${{ steps.version.outputs.VALUE }}
+          path: |
+            dist/*
+            BUILD-METADATA.properties
+            REPRODUCIBILITY.properties
+            SHA256SUMS
+          if-no-files-found: error
+          retention-days: 14
+
+# Ordinary builds intentionally stop at tested evidence. GitHub Packages
+# publication belongs to an explicitly projected public release/candidate path;
+# private development must never publish merely because master changed.

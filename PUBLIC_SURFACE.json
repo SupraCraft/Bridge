@@ -1,0 +1,200 @@
+{
+  "schema": "public-surface-contract/1",
+  "production_base_url": "https://supracraft.github.io/Bridge/",
+  "entry_states": [
+    "home"
+  ],
+  "routes": [
+    {
+      "id": "home",
+      "path": "/",
+      "title": "Java bytecode tooling · Bridge",
+      "indexable": true,
+      "required": true,
+      "terminal": false
+    },
+    {
+      "id": "use",
+      "path": "/use/",
+      "title": "Use Bridge 0.1.0 · Bridge",
+      "indexable": true,
+      "required": true,
+      "terminal": false
+    },
+    {
+      "id": "compatibility",
+      "path": "/compatibility/",
+      "title": "Compatibility · Bridge",
+      "indexable": true,
+      "required": true,
+      "terminal": false
+    },
+    {
+      "id": "releases",
+      "path": "/releases/",
+      "title": "Releases · Bridge",
+      "indexable": true,
+      "required": true,
+      "terminal": false
+    },
+    {
+      "id": "release-stable",
+      "path": "/releases/0.1.0/",
+      "title": "Release 0.1.0 · Bridge",
+      "indexable": true,
+      "required": true,
+      "terminal": false
+    },
+    {
+      "id": "accessibility",
+      "path": "/accessibility/",
+      "title": "Accessibility · Bridge",
+      "indexable": true,
+      "required": true,
+      "terminal": false
+    }
+  ],
+  "transitions": [
+    {
+      "from": "home",
+      "action": "home-use-primary",
+      "to": "use",
+      "required_rendered": true
+    },
+    {
+      "from": "home",
+      "action": "home-compatibility-primary",
+      "to": "compatibility",
+      "required_rendered": true
+    },
+    {
+      "from": "home",
+      "action": "home-use-card",
+      "to": "use",
+      "required_rendered": true
+    },
+    {
+      "from": "home",
+      "action": "home-compatibility-card",
+      "to": "compatibility",
+      "required_rendered": true
+    },
+    {
+      "from": "home",
+      "action": "home-releases-card",
+      "to": "releases",
+      "required_rendered": true
+    },
+    {
+      "from": "releases",
+      "action": "open-stable-release",
+      "to": "release-stable",
+      "required_rendered": true
+    },
+    {
+      "from": "release-stable",
+      "action": "release-use",
+      "to": "use",
+      "required_rendered": true
+    }
+  ],
+  "navigation": [
+    {
+      "action": "skip-main",
+      "class": "utility",
+      "to": "$self"
+    },
+    {
+      "action": "nav-home",
+      "class": "global",
+      "to": "home"
+    },
+    {
+      "action": "nav-use",
+      "class": "global",
+      "to": "use"
+    },
+    {
+      "action": "nav-compatibility",
+      "class": "global",
+      "to": "compatibility"
+    },
+    {
+      "action": "nav-releases",
+      "class": "global",
+      "to": "releases"
+    },
+    {
+      "action": "nav-accessibility",
+      "class": "global",
+      "to": "accessibility"
+    }
+  ],
+  "resources": [
+    {
+      "action": "machine-project",
+      "path": "/project.json",
+      "required_on": ["home"]
+    },
+    {
+      "action": "machine-compatibility",
+      "path": "/compatibility.json",
+      "required_on": ["home", "compatibility"]
+    },
+    {
+      "action": "machine-github",
+      "path": "/github.json",
+      "required_on": ["home"]
+    },
+    {
+      "action": "machine-brand",
+      "path": "/brand.json",
+      "required_on": ["home"]
+    },
+    {
+      "action": "machine-artifacts",
+      "path": "/artifacts.json",
+      "required_on": ["home"]
+    },
+    {
+      "action": "machine-stable-json",
+      "path": "/releases/stable.json",
+      "required_on": ["home", "use"]
+    },
+    {
+      "action": "machine-stable-text",
+      "path": "/releases/stable.txt",
+      "required_on": ["home"]
+    },
+    {
+      "action": "machine-llms",
+      "path": "/llms.txt",
+      "required_on": ["home"]
+    }
+  ],
+  "handoffs": [
+    {
+      "action": "view-source",
+      "handoff": "source",
+      "url": "https://github.com/SupraCraft/Bridge"
+    },
+    {
+      "action": "qualification-evidence",
+      "handoff": "qualification-evidence",
+      "url": "https://github.com/SupraCraft/Bridge/releases/download/v0.1.0/bridge-release-qualification.json"
+    },
+    {
+      "action": "download-artifact",
+      "handoff": "artifact-download",
+      "url_prefix": "https://github.com/SupraCraft/Bridge/releases/download/v0.1.0/"
+    }
+  ],
+  "discovery": {
+    "sitemap": "sitemap.xml",
+    "robots": {
+      "mode": "origin-external",
+      "url": "https://supracraft.github.io/robots.txt"
+    },
+    "machine_description": "surface.json"
+  }
+}

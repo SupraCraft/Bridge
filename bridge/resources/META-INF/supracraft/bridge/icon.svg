@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Bridge project icon</title>
+  <desc id="desc">A long modern bridge with two piers, copper fittings, and teal details.</desc>
+  <g fill="none" stroke-linejoin="round">
+    <path d="M72 202h368v54H72z" fill="#F2EEE5" stroke="#243F46" stroke-width="18"/>
+    <path d="M82 190h348" stroke="#243F46" stroke-width="18" stroke-linecap="square"/>
+    <path d="M82 175h348" stroke="#C27742" stroke-width="10" stroke-linecap="square"/>
+    <path d="M116 170v72M178 170v72M256 170v72M334 170v72M396 170v72" stroke="#C27742" stroke-width="12"/>
+    <path d="M118 254v154h70V254M324 254v154h70V254" fill="#E3DED3" stroke="#243F46" stroke-width="18"/>
+    <path d="M102 408h102v34H102zM308 408h102v34H308z" fill="#34494F" stroke="#243F46" stroke-width="12"/>
+    <path d="M187 284l69 84 69-84" stroke="#34494F" stroke-width="18"/>
+    <path d="M143 300v60M369 300v60" stroke="#58B9C6" stroke-width="16" stroke-linecap="round"/>
+    <path d="M72 256h368" stroke="#C27742" stroke-width="10"/>
+  </g>
+</svg>

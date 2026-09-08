@@ -1,0 +1,74 @@
+name: modern-bytecode-compatibility
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'pom.xml'
+      - 'bridge*/**'
+      - 'COMPATIBILITY.json'
+      - 'compatibility/fixtures/modern-**'
+      - 'scripts/run-modern-bytecode-compatibility.sh'
+      - 'scripts/check-run-report.py'
+      - 'scripts/VerifyClassFiles.java'
+      - '.github/workflows/modern-bytecode-compatibility.yml'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'pom.xml'
+      - 'bridge*/**'
+      - 'COMPATIBILITY.json'
+      - 'compatibility/fixtures/modern-**'
+      - 'scripts/run-modern-bytecode-compatibility.sh'
+      - 'scripts/check-run-report.py'
+      - 'scripts/VerifyClassFiles.java'
+      - '.github/workflows/modern-bytecode-compatibility.yml'
+  schedule:
+    - cron: '29 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: modern-bytecode-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  modern-bytecode:
+    name: modern-bytecode-on-host-${{ matrix.host }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        host: ['21', '26']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+
+      - name: Set up JDK 26 fixture producer and verifier
+        uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287
+        with:
+          distribution: temurin
+          java-version: 26
+
+      - name: Record JDK 26 home
+        run: echo "JDK26_HOME=$JAVA_HOME" >> "$GITHUB_ENV"
+
+      - name: Set up Bridge host JDK ${{ matrix.host }}
+        uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.host }}
+          cache: maven
+
+      - name: Prove modern bytecode compatibility
+        run: bash scripts/run-modern-bytecode-compatibility.sh
+
+      - name: Upload modern-bytecode evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: bridge-modern-bytecode-host-${{ matrix.host }}
+          path: build/modern-bytecode-compatibility/host-${{ matrix.host }}.json
+          if-no-files-found: error
+          retention-days: 14

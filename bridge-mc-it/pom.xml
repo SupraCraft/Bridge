@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.github.supracraft.bridge</groupId>
+        <artifactId>bridge-parent</artifactId>
+        <version>0.1.1-dev</version>
+    </parent>
+
+    <artifactId>bridge-mc-it</artifactId>
+    <packaging>jar</packaging>
+    <name>Bridge Minecraft Integration Test</name>
+    <description>Optional integration test that runs Bridge against a Mojang-mapped server jar</description>
+
+    <properties>
+        <junit.jupiter.version>5.10.2</junit.jupiter.version>
+        <minecraft.server.version>LOCAL</minecraft.server.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.github.supracraft.bridge</groupId>
+            <artifactId>bridge</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.mojang</groupId>
+            <artifactId>minecraft-server</artifactId>
+            <version>${minecraft.server.version}</version>
+            <scope>system</scope>
+            <systemPath>${minecraft.serverJar}</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <directory>../build/bridge-mc-it</directory>
+        <sourceDirectory>java</sourceDirectory>
+        <testSourceDirectory>src/test/java</testSourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
+                <configuration>
+                    <release>${maven.compiler.release}</release>
+                    <parameters>true</parameters>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.github.supracraft.bridge</groupId>
+                <artifactId>bridge-plugin</artifactId>
+                <version>${project.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>bridge</goal>
+                        </goals>
+                        <configuration>
+                            <dependencies>
+                                <dependency>
+                                    <groupId>com.mojang</groupId>
+                                    <artifactId>minecraft-server</artifactId>
+                                    <version>${minecraft.server.version}</version>
+                                    <scope>system</scope>
+                                    <systemPath>${minecraft.serverJar}</systemPath>
+                                </dependency>
+                            </dependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.plugin.version}</version>
+                <configuration>
+                    <useSystemClassLoader>true</useSystemClassLoader>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

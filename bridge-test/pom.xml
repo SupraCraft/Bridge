@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.github.supracraft.bridge</groupId>
+        <artifactId>bridge-parent</artifactId>
+        <version>0.1.1-dev</version>
+    </parent>
+
+    <artifactId>bridge-test</artifactId>
+    <packaging>jar</packaging>
+
+    <properties>
+        <bridge.version>${project.version}</bridge.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.github.supracraft.bridge</groupId>
+            <artifactId>bridge</artifactId>
+            <version>${bridge.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-util</artifactId>
+            <version>${asm.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <directory>../build/bridge-test</directory>
+        <sourceDirectory>java</sourceDirectory>
+        <testSourceDirectory>tests</testSourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
+                <configuration>
+                    <release>${maven.compiler.release}</release>
+                    <parameters>true</parameters>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.github.supracraft.bridge</groupId>
+                <artifactId>bridge-plugin</artifactId>
+                <version>${bridge.version}</version>
+                <configuration>
+                    <flags>
+                        <flag>NO_DEBUG</flag>
+                    </flags>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>bridge</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.plugin.version}</version>
+                <configuration>
+                    <argLine>-Xverify:all</argLine>
+                    <systemPropertyVariables>
+                        <bridge.test.outputDirectory>${project.build.outputDirectory}</bridge.test.outputDirectory>
+                        <bridge.test.reportFile>${project.build.directory}/bridge/bridge-report.json</bridge.test.reportFile>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
