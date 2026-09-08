@@ -1,0 +1,95 @@
+{
+  "schema": "bridge-release-candidate-status/1",
+  "version": "0.1.0-rc.2",
+  "status": "published-qualified",
+  "eligible_for_stable_promotion": true,
+  "source_commit": "ef91b5fc9aa204325bf78c5ff19b16e5948f8e51",
+  "workflow_run_id": 33233460578,
+  "publication": {
+    "channel": "github-packages",
+    "completed": true,
+    "immutable": true,
+    "final_evidence_artifact_digest": "sha256:ac58e0d0a1d3668eb37ed069187717e4bbbb8bbae9c5fe93456f5e7c74bedc8e"
+  },
+  "qualification": {
+    "status": "pass",
+    "host_jvms": [21, 22, 23, 24, 25, 26],
+    "class_file_targets": [8, 11, 17, 21, 22, 23, 24, 25, 26],
+    "boundary_hosts": [21, 26],
+    "modern_bytecode_cases": [
+      "java21-modern-language-bytecode",
+      "java25-flexible-constructor",
+      "java21-module-info"
+    ],
+    "reproducibility_properties_consistent": true,
+    "published_jar_sha256": {
+      "bridge": "67effde60ffd17c8993ab893bb1b0c0ba60fa1c5e7d833a11a52ee4b71c5888a",
+      "bridge-asm": "ecf52540fb8484881a705dff3fb6ea78963da3fb27ca10c726a1b489518889f1",
+      "bridge-plugin": "4e2956267ea9b7c55db3174c9248efdddf8fe165e76ea974d3e5e0277574fe8e"
+    }
+  },
+  "consumer_qualification": {
+    "status": "pass",
+    "repository": "SupraCraft/VanillaCord",
+    "bridge_version": "0.1.0-rc.2",
+    "source_commit": "6e8874c74e2fec651edb73dd578c3c92ba286d20",
+    "source_ref": "refs/heads/qualification/bridge/0.1.0-rc.2",
+    "workflow_run_id": 33233738353,
+    "evidence_artifact_digest": "sha256:44650d01055da9fab5fa48316bfaa13a3d73b0b6bf05d604d1912a623c3c70b4",
+    "consumer_artifact": "supracraft-vanillacord-2.9.0-dev.jar",
+    "consumer_artifact_sha256": "f089a66002a619a26f71a3ff7dd00ae93e1ec8847d9a8434d54c527c9a8ea2e8",
+    "minecraft": {
+      "current_stable": "26.2",
+      "current_stable_result": "pass-patch-integrity-boot",
+      "required_supported": {
+        "1.21.11": "pass-patch-integrity",
+        "1.20.6": "pass-patch-integrity",
+        "1.20.4": "pass-patch-integrity",
+        "1.19.4": "pass-patch-integrity",
+        "1.18.2": "pass-patch-integrity"
+      }
+    }
+  },
+  "advertised_feature_coverage": {
+    "status": "pass",
+    "features": {
+      "bridge-constructor-method-field-redirection": [
+        "bridge-test/java/bridge/objects/Dummy.java",
+        "bridge-test/java/bridge/primitives/BoxBridge.java",
+        "bridge-test/tests/bridge/primitives/BridgeTests.java"
+      ],
+      "invocation": [
+        "bridge-test/java/bridge/objects/Invocations.java",
+        "bridge-test/tests/bridge/objects/InvocationTests.java"
+      ],
+      "jump-label": [
+        "bridge-test/java/bridge/objects/Invocations.java",
+        "bridge-test/tests/bridge/objects/InvocationTests.java"
+      ],
+      "multi-release-fork": [
+        "bridge-test/java/bridge/objects/Forks.java",
+        "bridge-test/tests/bridge/objects/FeatureCoverageTests.java",
+        ".github/workflows/release-qualification.yml"
+      ],
+      "unchecked": [
+        "bridge-test/java/bridge/objects/Invocations.java",
+        "bridge-test/tests/bridge/objects/InvocationTests.java"
+      ],
+      "adopt": [
+        "bridge-test/java/bridge/objects/Dummy.java",
+        "bridge-test/tests/bridge/objects/FeatureCoverageTests.java"
+      ],
+      "synthetic": [
+        "bridge-test/java/bridge/objects/Dummy.java",
+        "bridge-test/tests/bridge/objects/InvocationTests.java"
+      ],
+      "debug-metadata-stripping": [
+        "bridge-test/tests/bridge/objects/DebugMetadataTests.java"
+      ]
+    }
+  },
+  "stable_promotion": {
+    "decision": "eligible",
+    "remaining_blockers": []
+  }
+}

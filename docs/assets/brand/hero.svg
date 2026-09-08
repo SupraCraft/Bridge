@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 600" role="img" aria-labelledby="title desc">
+  <title id="title">Bridge Java tooling illustration</title>
+  <desc id="desc">A source file and class file connected by a modern bridge, representing post-compile Java bytecode transformation.</desc>
+  <rect width="1600" height="600" rx="34" fill="#102B33"/>
+  <g opacity=".18" stroke="#5DAFBA" stroke-width="2"><path d="M0 120h1600M0 240h1600M0 360h1600M0 480h1600"/><path d="M200 0v600M400 0v600M600 0v600M800 0v600M1000 0v600M1200 0v600M1400 0v600"/></g>
+  <g transform="translate(90 118)">
+    <rect width="300" height="360" rx="24" fill="#203941" stroke="#587078" stroke-width="6"/>
+    <circle cx="30" cy="30" r="8" fill="#C27742"/><circle cx="58" cy="30" r="8" fill="#D7B28A"/><circle cx="86" cy="30" r="8" fill="#58B9C6"/>
+    <g stroke-linecap="round" stroke-width="12"><path d="M40 100h152" stroke="#C27742"/><path d="M40 140h210" stroke="#F2EEE5"/><path d="M40 180h125" stroke="#58B9C6"/><path d="M40 220h190" stroke="#F2EEE5"/><path d="M40 260h145" stroke="#C27742"/></g>
+  </g>
+  <g transform="translate(1210 118)">
+    <path d="M0 0h240l70 70v290H0z" fill="#203941" stroke="#587078" stroke-width="6"/>
+    <path d="M240 0v70h70" fill="#314B53"/>
+    <g fill="#58B9C6" font-family="ui-monospace,monospace" font-size="32"><text x="38" y="122">CA FE BA BE</text><text x="38" y="172">00 00 00 3D</text><text x="38" y="222">00 1A 0A 00</text><text x="38" y="272">07 00 08 07</text></g>
+  </g>
+  <g transform="translate(420 140)">
+    <path d="M30 170h730v72H30z" fill="#EEE8DC" stroke="#243F46" stroke-width="18"/>
+    <path d="M48 155h694" stroke="#C27742" stroke-width="12"/>
+    <path d="M80 150v86M190 150v86M310 150v86M430 150v86M550 150v86M680 150v86" stroke="#C27742" stroke-width="12"/>
+    <path d="M110 242v170h96V242M582 242v170h96V242" fill="#DED9CF" stroke="#243F46" stroke-width="18"/>
+    <path d="M90 412h136v36H90zM562 412h136v36H562z" fill="#31494F" stroke="#243F46" stroke-width="12"/>
+    <path d="M206 276l188 120 188-120" fill="none" stroke="#31494F" stroke-width="20"/>
+    <path d="M158 290v66M630 290v66" stroke="#58B9C6" stroke-width="16" stroke-linecap="round"/>
+  </g>
+  <path d="M390 300h65M1145 300h65" stroke="#58B9C6" stroke-width="8" stroke-dasharray="14 14"/>
+</svg>

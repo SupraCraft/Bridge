@@ -1,0 +1,31 @@
+{
+  "schema": "bridge-release-candidate-status/1",
+  "version": "0.1.0-rc.1",
+  "status": "published-superseded",
+  "eligible_for_stable_promotion": false,
+  "source_commit": "fee4c1d3cb4f1f17c574c2ba9cc1538593fac31f",
+  "workflow_run_id": 33227380999,
+  "publication": {
+    "channel": "github-packages",
+    "completed": true,
+    "immutable": true,
+    "final_evidence_artifact_digest": "sha256:6f05f68ccefb85f1767e06920ca027c3b7f278ac0efc48aec8f1891bf05105eb"
+  },
+  "qualification": {
+    "status": "pass",
+    "host_jvms": [21, 22, 23, 24, 25, 26],
+    "class_file_targets": [8, 11, 17, 21, 22, 23, 24, 25, 26],
+    "boundary_hosts": [21, 26]
+  },
+  "artifact_observation": {
+    "jar_manifest_provenance_correct": true,
+    "reproducibility_properties_consistent": false,
+    "published_jar_sha256": {
+      "bridge": "eb5eb6800729d5bba73d01cbe8504a4339a2955bc5a6746042e5ae0011092460",
+      "bridge-asm": "ef8d76239c22105e797fe979fb84a081feecf11706a5fce80f7d6984411676ec",
+      "bridge-plugin": "7fd30344501f2f3c127d874d8c17b2be35929883e5d960ffd23f14cba96f8e36"
+    }
+  },
+  "supersession_reason": "The published JAR manifests record the correct source commit, ref, run, and candidate version, but the retained REPRODUCIBILITY.properties recorded unresolved CI placeholders for build.commit, build.ref, and build.number. The coordinate is immutable and will not be overwritten; stable-promotion qualification continues with a later candidate.",
+  "replacement": "next-release-candidate"
+}

@@ -1,0 +1,74 @@
+name: classfile-compatibility
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'pom.xml'
+      - 'bridge*/**'
+      - 'COMPATIBILITY.json'
+      - 'compatibility/**'
+      - 'scripts/run-classfile-compatibility.sh'
+      - 'scripts/check-run-report.py'
+      - 'scripts/VerifyClassFiles.java'
+      - '.github/workflows/classfile-compatibility.yml'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'pom.xml'
+      - 'bridge*/**'
+      - 'COMPATIBILITY.json'
+      - 'compatibility/**'
+      - 'scripts/run-classfile-compatibility.sh'
+      - 'scripts/check-run-report.py'
+      - 'scripts/VerifyClassFiles.java'
+      - '.github/workflows/classfile-compatibility.yml'
+  schedule:
+    - cron: '11 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: classfile-compatibility-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  classfile-matrix:
+    name: classfiles-8-through-26-on-host-${{ matrix.host }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        host: ['21', '26']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+
+      - name: Set up JDK 26 fixture producer
+        uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287
+        with:
+          distribution: temurin
+          java-version: 26
+
+      - name: Record JDK 26 producer home
+        run: echo "JDK26_HOME=$JAVA_HOME" >> "$GITHUB_ENV"
+
+      - name: Set up Bridge host JDK ${{ matrix.host }}
+        uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.host }}
+          cache: maven
+
+      - name: Prove Bridge class-file envelope
+        run: bash scripts/run-classfile-compatibility.sh
+
+      - name: Upload class-file compatibility evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: bridge-classfile-compatibility-host-${{ matrix.host }}
+          path: build/classfile-compatibility/host-${{ matrix.host }}.json
+          if-no-files-found: error
+          retention-days: 14

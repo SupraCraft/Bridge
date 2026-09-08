@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.github.supracraft.bridge</groupId>
+        <artifactId>bridge-parent</artifactId>
+        <version>0.1.0</version>
+    </parent>
+
+    <artifactId>bridge</artifactId>
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>9.10.1</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <directory>../build/bridge</directory>
+        <sourceDirectory>java</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>resources</directory>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
+                <configuration>
+                    <release>${maven.compiler.release}</release>
+                    <parameters>true</parameters>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.github.supracraft.bridge</groupId>
+                <artifactId>bridge-plugin</artifactId>
+                <version>${bridge.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>bridge</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven.javadoc.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>javadoc</goal>
+                        </goals>
+                        <configuration>
+                            <windowtitle>Bridge</windowtitle>
+                            <doctitle>Bridge ${project.version}</doctitle>
+                            <show>package</show>
+                            <destDir>./</destDir>
+                            <outputDirectory>${basedir}/../javadoc</outputDirectory>
+                            <reportOutputDirectory>${basedir}/../javadoc</reportOutputDirectory>
+                            <additionalOptions>-Xdoclint:none</additionalOptions>
+                            <tags>
+                                <tag>
+                                    <name>implNote</name>
+                                    <placement>a</placement>
+                                    <head>Notes:</head>
+                                </tag>
+                            </tags>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
