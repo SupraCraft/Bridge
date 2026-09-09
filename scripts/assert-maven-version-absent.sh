@@ -11,7 +11,7 @@ if [[ -z "$token" ]]; then
   exit 2
 fi
 
-base="https://maven.pkg.github.com/${owner}/Bridge/io/github/supracraft/bridge"
+base="https://maven.pkg.github.com/${owner}/Bridge/io/github/supracraft"
 artifacts=(bridge-parent bridge bridge-asm bridge-plugin bridge-test)
 
 for artifact in "${artifacts[@]}"; do

@@ -17,7 +17,7 @@
     "runtime_dependency_on_private_repo": false
   },
   "artifact": {
-    "group": "io.github.supracraft.bridge",
+    "group": "io.github.supracraft",
     "parent": "bridge-parent",
     "modules": ["bridge", "bridge-asm", "bridge-plugin", "bridge-test"],
     "optional_modules": ["bridge-mc-it"],

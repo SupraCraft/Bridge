@@ -1,13 +1,13 @@
 # Canonical Bridge artifact consumption
 
-Canonical artifacts produced by `SupraCraft/Bridge` use Maven group `io.github.supracraft.bridge`.
+Public-era artifacts produced by `SupraCraft/Bridge` use Maven group `io.github.supracraft`.
 
 Use one exact published version consistently across related modules:
 
 ```text
-io.github.supracraft.bridge:bridge:<version>
-io.github.supracraft.bridge:bridge-asm:<version>
-io.github.supracraft.bridge:bridge-plugin:<version>
+io.github.supracraft:bridge:<version>
+io.github.supracraft:bridge-asm:<version>
+io.github.supracraft:bridge-plugin:<version>
 ```
 
 The repository is a fork of `ME1312/Bridge`. Historical `net.ME1312.ASM` coordinates belong to upstream/history and must not be used as the identity of new SupraCraft artifacts.
@@ -49,14 +49,14 @@ Set `<version>` to an exact published Bridge version:
 </properties>
 
 <dependency>
-  <groupId>io.github.supracraft.bridge</groupId>
+    <groupId>io.github.supracraft</groupId>
   <artifactId>bridge</artifactId>
   <version>${bridge.version}</version>
   <scope>provided</scope>
 </dependency>
 
 <plugin>
-  <groupId>io.github.supracraft.bridge</groupId>
+  <groupId>io.github.supracraft</groupId>
   <artifactId>bridge-plugin</artifactId>
   <version>${bridge.version}</version>
 </plugin>

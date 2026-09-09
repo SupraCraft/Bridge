@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.github.supracraft.bridge</groupId>
+        <groupId>io.github.supracraft</groupId>
         <artifactId>bridge-parent</artifactId>
         <version>0.1.1-dev</version>
     </parent>
@@ -40,7 +40,7 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>io.github.supracraft.bridge</groupId>
+                <groupId>io.github.supracraft</groupId>
                 <artifactId>bridge-plugin</artifactId>
                 <version>${bridge.version}</version>
                 <executions>

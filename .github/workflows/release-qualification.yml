@@ -170,7 +170,7 @@ jobs:
             '${{ needs.context.outputs.version }}' \
             local \
             'file:///tmp/bridge-release-maven-repo'
-          base='/tmp/bridge-release-maven-repo/io/github/supracraft/bridge'
+          base='/tmp/bridge-release-maven-repo/io/github/supracraft'
           version='${{ needs.context.outputs.version }}'
           test -s "$base/bridge-parent/$version/bridge-parent-$version.pom"
           for artifact in bridge bridge-asm bridge-plugin bridge-test; do
@@ -186,7 +186,7 @@ jobs:
       - name: Record release build metadata
         run: |
           cat > BUILD-METADATA.properties <<EOF
-          group=io.github.supracraft.bridge
+          group=io.github.supracraft
           version=${{ needs.context.outputs.version }}
           release.kind=${{ needs.context.outputs.mode }}
           release.candidate=${{ needs.context.outputs.is_candidate }}

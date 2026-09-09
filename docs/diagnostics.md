@@ -68,7 +68,7 @@ Automation that does not need live human output should use Maven's existing cons
 
 ## Artifact identity
 
-Version-consistency diagnostics recognize the canonical SupraCraft API coordinate `io.github.supracraft.bridge:bridge` and retain recognition of the historical upstream `net.ME1312.ASM:bridge` coordinate for compatibility. New consumers must use the canonical coordinate.
+Version-consistency diagnostics recognize the public-era SupraCraft API coordinate `io.github.supracraft:bridge`, retain recognition of the historical private `io.github.supracraft.bridge:bridge` coordinate, and recognize the upstream `net.ME1312.ASM:bridge` coordinate for compatibility. New public consumers must use the public-era coordinate.
 
 ## Automation and agent guidance
 

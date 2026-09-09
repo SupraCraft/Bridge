@@ -6,11 +6,11 @@ Bridge uses independent semantic versioning. VanillaCord and other consumers dep
 
 Current artifacts use the SupraCraft namespace:
 
-- parent: `io.github.supracraft.bridge:bridge-parent`
-- runtime API: `io.github.supracraft.bridge:bridge`
-- ASM helper: `io.github.supracraft.bridge:bridge-asm`
-- Maven plugin: `io.github.supracraft.bridge:bridge-plugin`
-- reactor test artifact: `io.github.supracraft.bridge:bridge-test`
+- public-era parent: `io.github.supracraft:bridge-parent`
+- public-era runtime API: `io.github.supracraft:bridge`
+- public-era ASM helper: `io.github.supracraft:bridge-asm`
+- public-era Maven plugin: `io.github.supracraft:bridge-plugin`
+- public-era reactor test artifact: `io.github.supracraft:bridge-test`
 
 Historical `net.ME1312.ASM:*` coordinates identify upstream/history and are not valid identity for new SupraCraft builds. Java packages remain `bridge.*` because they are neutral API names.
 

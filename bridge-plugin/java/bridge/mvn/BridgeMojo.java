@@ -46,7 +46,7 @@ import static bridge.mvn.ForkVisitor.*;
 )
 public final class BridgeMojo extends AbstractMojo {
 
-    private static final String CANONICAL_GROUP = "io.github.supracraft.bridge";
+    private static final String CANONICAL_GROUP = "io.github.supracraft";
     private static final String LEGACY_GROUP = "net.ME1312.ASM";
 
     /** The maven repository system */

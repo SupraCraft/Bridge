@@ -19,14 +19,14 @@ This is the SupraCraft-maintained fork of [ME1312/Bridge](https://github.com/ME1
 
 ## Canonical artifact identity
 
-Current Maven coordinates are SupraCraft-owned:
+Public-era Maven coordinates are SupraCraft-owned:
 
 ```text
-io.github.supracraft.bridge:bridge-parent:<version>
-io.github.supracraft.bridge:bridge:<version>
-io.github.supracraft.bridge:bridge-asm:<version>
-io.github.supracraft.bridge:bridge-plugin:<version>
-io.github.supracraft.bridge:bridge-test:<version>
+io.github.supracraft:bridge-parent:<version>
+io.github.supracraft:bridge:<version>
+io.github.supracraft:bridge-asm:<version>
+io.github.supracraft:bridge-plugin:<version>
+io.github.supracraft:bridge-test:<version>
 ```
 
 Historical `net.ME1312.ASM` coordinates belong to upstream/history and are not valid identity for new SupraCraft publications. Java packages remain `bridge.*` because they are neutral API names and changing them would create unnecessary compatibility churn.
@@ -49,7 +49,7 @@ See `ARTIFACT_IDENTITY.md`, `VERSIONING.md`, and `docs/artifact-consumption.md`.
 - checked-in development source line: `X.Y.Z-dev` (currently `0.1.1-dev`)
 - normal CI publication: immutable `X.Y.Z-dev.<github-run-number>`
 - release candidate: `X.Y.Z-rc.N`
-- current stable release/tag: `0.1.0` / `v0.1.0`
+- current stable release/tag: `0.1.0` / `v0.1.0` (historical release assets; its Maven coordinates remain private)
 - Maven `SNAPSHOT` semantics are intentionally not used
 
 Consumers should pin one exact Bridge version across API/helper/plugin modules and record that coordinate in their own provenance.
@@ -87,15 +87,15 @@ Upstream feature documentation remains applicable to the shared Bridge API and t
 
 ## Maven consumer quickstart
 
-GitHub Packages repository:
+Public-era GitHub Packages repository:
 
 ```text
 https://maven.pkg.github.com/SupraCraft/Bridge
 ```
 
-GitHub Packages requires authentication. Use `GITHUB_TOKEN` in Actions or a PAT with `read:packages` locally.
+The restored historical `0.1.0` is distributed through its checksum-verified GitHub release assets. Public-era packages use the same repository with the `io.github.supracraft` group and require authentication.
 
-Use an **exact published version** in place of `<version>`; `0.1.0` is the current stable release:
+Use an **exact public-era published version** in place of `<version>`; the historical `0.1.0` Maven coordinate is not available from this public repository:
 
 ```xml
 <properties>
@@ -118,7 +118,7 @@ Use an **exact published version** in place of `<version>`; `0.1.0` is the curre
 
 <dependencies>
     <dependency>
-        <groupId>io.github.supracraft.bridge</groupId>
+        <groupId>io.github.supracraft</groupId>
         <artifactId>bridge</artifactId>
         <version>${bridge.version}</version>
         <scope>provided</scope>
@@ -128,7 +128,7 @@ Use an **exact published version** in place of `<version>`; `0.1.0` is the curre
 <build>
     <plugins>
         <plugin>
-            <groupId>io.github.supracraft.bridge</groupId>
+            <groupId>io.github.supracraft</groupId>
             <artifactId>bridge-plugin</artifactId>
             <version>${bridge.version}</version>
             <executions>

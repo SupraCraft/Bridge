@@ -157,7 +157,11 @@ test('primary Bridge user journeys stay on the friendly site', async ({ page }) 
   assertExpectedSite(page, 'use journey');
   await expect(page).toHaveURL(/\/use\/$/);
   await expect(page.getByRole('heading', { level: 1 })).toContainText(`Use Bridge ${stable.version}`);
-  await expect(page.locator('pre code').first()).toContainText(stable.maven.group);
+  if (stable.maven.available) {
+    await expect(page.locator('pre code').first()).toContainText(stable.maven.group);
+  } else {
+    await expect(page.getByRole('heading', { name: 'Historical release assets' })).toBeVisible();
+  }
 
   await page.getByRole('link', { name: 'Compatibility' }).first().click();
   assertExpectedSite(page, 'compatibility journey');

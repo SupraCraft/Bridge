@@ -118,8 +118,12 @@ def validate_site(reader, contract, compatibility, metadata, expected_brand, sta
     assert reader.read_text("releases/stable-url.txt").strip() == stable["artifacts"]["bridge"]["download_url"]
 
     use = pages["use/"]
-    assert version in use and stable["maven"]["group"] in use and stable["maven"]["repository"] in use
-    assert "GitHub Packages requires authentication" in use
+    if stable["maven"].get("available", True):
+        assert version in use and stable["maven"]["group"] in use and stable["maven"]["repository"] in use
+        assert "GitHub Packages requires authentication" in use
+    else:
+        assert version in use and "Historical release assets" in use
+        assert stable["maven"]["reason"] in use
     assert join_url(navigation_base, "releases/stable.json") in use
 
     compatibility_page = pages["compatibility/"]

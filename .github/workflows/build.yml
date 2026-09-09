@@ -54,7 +54,7 @@ jobs:
             echo "Legacy upstream Maven coordinates remain in active POMs."
             exit 1
           fi
-          grep -F '<groupId>io.github.supracraft.bridge</groupId>' pom.xml
+          grep -F '<groupId>io.github.supracraft</groupId>' pom.xml
           SOURCE_VERSION="$(python3 - <<'PY'
           import xml.etree.ElementTree as ET
           root = ET.parse('pom.xml').getroot()
@@ -115,7 +115,7 @@ jobs:
 
       - name: Verify produced coordinates and provenance
         run: |
-          test "$(./mvnw -q -DforceStdout help:evaluate -Dexpression=project.groupId)" = 'io.github.supracraft.bridge'
+          test "$(./mvnw -q -DforceStdout help:evaluate -Dexpression=project.groupId)" = 'io.github.supracraft'
           test "$(./mvnw -q -DforceStdout help:evaluate -Dexpression=project.version)" = '${{ steps.version.outputs.VALUE }}'
           unzip -p build/bridge/bridge-${{ steps.version.outputs.VALUE }}.jar META-INF/MANIFEST.MF | tr -d '\r' > /tmp/bridge-manifest.mf
           grep -Fx 'Implementation-Vendor: SupraCraft' /tmp/bridge-manifest.mf
@@ -130,7 +130,7 @@ jobs:
             '${{ steps.version.outputs.VALUE }}' \
             local \
             'file:///tmp/bridge-maven-repo'
-          base='/tmp/bridge-maven-repo/io/github/supracraft/bridge'
+          base='/tmp/bridge-maven-repo/io/github/supracraft'
           version='${{ steps.version.outputs.VALUE }}'
           test -s "$base/bridge-parent/$version/bridge-parent-$version.pom"
           for artifact in bridge bridge-asm bridge-plugin bridge-test; do
@@ -146,7 +146,7 @@ jobs:
       - name: Record build metadata
         run: |
           cat > BUILD-METADATA.properties <<EOF
-          group=io.github.supracraft.bridge
+          group=io.github.supracraft
           version=${{ steps.version.outputs.VALUE }}
           release.kind=development
           source.repository=SupraCraft/Bridge

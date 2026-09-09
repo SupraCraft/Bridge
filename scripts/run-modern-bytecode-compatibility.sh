@@ -45,7 +45,7 @@ transform_case() {
   cp -a "$input/." "$fixture_dir/target/classes/"
 
   ./mvnw -B -f "$fixture_dir/pom.xml" \
-    "io.github.supracraft.bridge:bridge-plugin:${bridge_version}:bridge" \
+    "io.github.supracraft:bridge-plugin:${bridge_version}:bridge" \
     -Dbridge.flags=FORCE_COMPILE
 
   python3 scripts/check-run-report.py "$fixture_dir/target/bridge/bridge-report.json"

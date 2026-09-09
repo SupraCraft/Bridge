@@ -66,7 +66,7 @@ classfile_workflow = Path('.github/workflows/classfile-compatibility.yml').read_
 modern_workflow = Path('.github/workflows/modern-bytecode-compatibility.yml').read_text(encoding='utf-8')
 
 assert contract['repository'] == 'SupraCraft/Bridge'
-assert contract['artifact']['group'] == 'io.github.supracraft.bridge'
+assert contract['artifact']['group'] == 'io.github.supracraft'
 assert contract['artifact']['embedded_project_icon'] == 'bridge:META-INF/supracraft/bridge/icon.svg'
 assert contract['brand']['organization'] == profile['organization_brand'] == 'SupraCraft'
 assert contract['brand']['contract_version'] == profile['brand_contract_version'] == brand['organization_brand']['contract_version']
@@ -112,7 +112,7 @@ assert brand['identity'] == 'Java bytecode tooling'
 assert brand['organization_brand']['profile_snapshot'] == 'BRAND_PROFILE.json'
 assert brand['organization_brand']['runtime_dependency_on_private_repo'] is False
 assert 'ME1312/Bridge' in page
-assert 'io.github.supracraft.bridge' in page
+assert 'io.github.supracraft' in page
 assert metadata['homepage'] in page
 assert metadata['description'] in page
 assert 'Minecraft' not in brand['identity']

@@ -6,8 +6,8 @@ Bridge is a SupraCraft-maintained fork of upstream work. Published artifacts fro
 
 Published Maven coordinates are owned by this repository:
 
-- group: `io.github.supracraft.bridge`
-- parent: `io.github.supracraft.bridge:bridge-parent`
+- group for public-era releases: `io.github.supracraft`
+- parent: `io.github.supracraft:bridge-parent`
 - modules: `bridge`, `bridge-asm`, `bridge-plugin`, `bridge-test`
 
 The optional `bridge-mc-it` module is an integration-test module and is not part of the normal published reactor artifact set.

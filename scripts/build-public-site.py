@@ -268,15 +268,21 @@ def main():
         "provenance": contract["provenance"],
     })
 
-    repo = stable["maven"]["repository"]
-    maven = f'''<properties>\n  <bridge.version>{version}</bridge.version>\n</properties>\n<repositories>\n  <repository><id>bridge-github</id><url>{repo}</url></repository>\n</repositories>\n<pluginRepositories>\n  <pluginRepository><id>bridge-github</id><url>{repo}</url></pluginRepository>\n</pluginRepositories>\n<dependencies>\n  <dependency>\n    <groupId>io.github.supracraft.bridge</groupId>\n    <artifactId>bridge</artifactId>\n    <version>${{bridge.version}}</version>\n    <scope>provided</scope>\n  </dependency>\n</dependencies>\n<build><plugins><plugin>\n  <groupId>io.github.supracraft.bridge</groupId>\n  <artifactId>bridge-plugin</artifactId>\n  <version>${{bridge.version}}</version>\n  <executions><execution><goals><goal>bridge</goal></goals></execution></executions>\n</plugin></plugins></build>'''
+    maven_info = stable.get("maven", {})
+    if maven_info.get("available", True):
+        repo = maven_info["repository"]
+        maven = f'''<properties>\n  <bridge.version>{version}</bridge.version>\n</properties>\n<repositories>\n  <repository><id>bridge-github</id><url>{repo}</url></repository>\n</repositories>\n<pluginRepositories>\n  <pluginRepository><id>bridge-github</id><url>{repo}</url></pluginRepository>\n</pluginRepositories>\n<dependencies>\n  <dependency>\n    <groupId>{contract["artifact"]["group"]}</groupId>\n    <artifactId>bridge</artifactId>\n    <version>${{bridge.version}}</version>\n    <scope>provided</scope>\n  </dependency>\n</dependencies>\n<build><plugins><plugin>\n  <groupId>{contract["artifact"]["group"]}</groupId>\n  <artifactId>bridge-plugin</artifactId>\n  <version>${{bridge.version}}</version>\n  <executions><execution><goals><goal>bridge</goal></goals></execution></executions>\n</plugin></plugins></build>'''
+        maven_section = f'<section class="section"><h2>Maven</h2><pre><code>{html.escape(maven)}</code></pre></section>'
+    else:
+        reason = html.escape(maven_info.get("reason", "Historical Maven coordinates are unavailable from this public repository."))
+        maven_section = f'<section class="section"><h2>Historical release assets</h2><p>The current stable 0.1.0 release is restored as source and release assets. {reason} Use the checksum-verified release downloads above.</p></section>'
     bash = f'''BRIDGE_VERSION=$(curl -fsSL {join_url(canonical_base, 'releases/stable.txt')})\necho "$BRIDGE_VERSION"'''
     ps = f'''$bridgeVersion = (Invoke-RestMethod '{join_url(canonical_base, 'releases/stable.txt')}').Trim()\n$bridgeVersion'''
     use_body = f'''
 <h1>Use Bridge {html.escape(version)}</h1>
 <p>The current stable release is <strong>{html.escape(version)}</strong>. Pin that exact version across Bridge modules and the Maven plugin.</p>
 <div class="notice"><strong>GitHub Packages requires authentication.</strong> In GitHub Actions use <code>GITHUB_TOKEN</code>; locally use a token with package read permission and the matching GitHub actor.</div>
-<section class="section"><h2>Maven</h2><pre><code>{html.escape(maven)}</code></pre></section>
+{maven_section}
 <section class="section"><h2>Stable version lookup</h2><p>Bash:</p><pre><code>{html.escape(bash)}</code></pre><p>PowerShell:</p><pre><code>{html.escape(ps)}</code></pre><p>Structured metadata: {resource_link(base, 'releases/stable.json', 'stable.json', 'machine-stable-json')}.</p></section>
 '''
     write(output / "use/index.html", shell(f"Use Bridge {version}", "Use the current stable Bridge Maven coordinates and lookup endpoints.", use_body, "use/", "use", base, canonical_base))

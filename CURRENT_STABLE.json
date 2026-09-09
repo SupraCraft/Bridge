@@ -7,10 +7,10 @@
   "release_url": "https://github.com/SupraCraft/Bridge/releases/tag/v0.1.0",
   "info_url": "https://supracraft.github.io/Bridge/releases/0.1.0/",
   "maven": {
-    "repository": "https://maven.pkg.github.com/SupraCraft/Bridge",
+    "available": false,
     "group": "io.github.supracraft.bridge",
     "version": "0.1.0",
-    "authentication_required": true
+    "reason": "Historical 0.1.0 Maven coordinates remain private to Bridge-private; use the retained release assets below."
   },
   "artifacts": {
     "bridge": {

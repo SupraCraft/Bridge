@@ -20,7 +20,7 @@ Preserve upstream attribution to `ME1312/Bridge`, while SupraCraft artifacts ret
 
 ## Non-negotiable identity
 
-- Maven group: `io.github.supracraft.bridge`
+- Maven group for public-era releases: `io.github.supracraft`
 - parent: `bridge-parent`
 - active modules: `bridge`, `bridge-asm`, `bridge-plugin`, `bridge-test`
 - optional profile module: `bridge-mc-it`
