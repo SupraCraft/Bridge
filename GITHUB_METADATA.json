@@ -1,7 +1,7 @@
 {
   "schema_version": "1.2.0",
   "repository": "SupraCraft/Bridge",
-  "description": "SupraCraft-maintained Bridge fork: post-compile Maven plugin and bytecode library for Java transformation tooling.",
+  "description": "Post-compile Maven plugin and bytecode library for Java transformation tooling.",
   "homepage": "https://supracraft.github.io/Bridge/",
   "topics": [
     "asm",
@@ -9,10 +9,7 @@
     "bytecode-manipulation",
     "java",
     "maven",
-    "maven-plugin",
-    "plugin",
-    "recompiler",
-    "reproducible-builds"
+    "maven-plugin"
   ],
   "pages": {
     "expected_enabled": true,
