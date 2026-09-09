@@ -275,7 +275,7 @@ def main():
         maven_section = f'<section class="section"><h2>Maven</h2><pre><code>{html.escape(maven)}</code></pre></section>'
     else:
         reason = html.escape(maven_info.get("reason", "Historical Maven coordinates are unavailable from this public repository."))
-        maven_section = f'<section class="section"><h2>Historical release assets</h2><p>The current stable 0.1.0 release is restored as source and release assets. {reason} Use the checksum-verified release downloads above.</p></section>'
+        maven_section = f'<section class="section"><h2>Historical release assets</h2><p>The current stable release is available as source and release assets, but its Maven coordinates are not available from this public repository. {reason} Use the checksum-verified release downloads above.</p></section>'
     bash = f'''BRIDGE_VERSION=$(curl -fsSL {join_url(canonical_base, 'releases/stable.txt')})\necho "$BRIDGE_VERSION"'''
     ps = f'''$bridgeVersion = (Invoke-RestMethod '{join_url(canonical_base, 'releases/stable.txt')}').Trim()\n$bridgeVersion'''
     use_body = f'''

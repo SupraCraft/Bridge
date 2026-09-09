@@ -1,0 +1,46 @@
+{
+  "schema": "bridge-release-candidate-status/1",
+  "version": "0.1.1-rc.1",
+  "status": "published-qualified",
+  "eligible_for_stable_promotion": true,
+  "source_commit": "08b2b81227dc7339dc72ad9875a5aa36a0d58eee",
+  "workflow_run_id": 34316497106,
+  "publication": {
+    "channel": "github-packages",
+    "completed": true,
+    "immutable": true,
+    "final_evidence_artifact_digest": "sha256:431735a1df708990a641b6a9237d3597a2bdebd672c00d19af8e5626b5edadb2"
+  },
+  "qualification": {
+    "status": "pass",
+    "host_jvms": [21, 22, 23, 24, 25, 26],
+    "class_file_targets": [8, 11, 17, 21, 22, 23, 24, 25, 26],
+    "boundary_hosts": [21, 26],
+    "modern_bytecode_cases": [
+      "java21-modern-language-bytecode",
+      "java25-flexible-constructor",
+      "java21-module-info"
+    ],
+    "reproducibility_properties_consistent": true,
+    "published_jar_sha256": {
+      "bridge": "f04620f0a992ccdfaf20a6b0b0eb01cc612ee1972c32764afc22d6ed6db36500",
+      "bridge-asm": "1461ded4a5773f02923745761a7c23bb658bca24d53842ca95d9bd3a773590a8",
+      "bridge-plugin": "1e7f5f248c7290638fa409f3c6abbedeff4fc6ca2dbf161263dcaba0ea81c75c"
+    }
+  },
+  "consumer_qualification": {
+    "status": "pass",
+    "repository": "SupraCraft/VanillaCord",
+    "bridge_version": "0.1.1-rc.1",
+    "source_commit": "ae95c0e64c4b867a60909b71bd2eb8d17051a5e5",
+    "source_ref": "refs/heads/qualification/bridge/0.1.1-rc.1",
+    "workflow_run_id": 34326771957,
+    "evidence_artifact_digest": "sha256:1b69c00c20ceb104031a6f0de6ce8d4a751bff7b6dea4f100daa62104d6e5bf4",
+    "consumer_artifact": "supracraft-vanillacord-2.9.1-dev.jar",
+    "consumer_artifact_sha256": "6fb2bb9118df855ae41458c0d307d9f7960e7db3345ac6b45af4d27f38706b0b"
+  },
+  "stable_promotion": {
+    "decision": "eligible",
+    "remaining_blockers": []
+  }
+}

@@ -16,7 +16,7 @@
     {
       "id": "use",
       "path": "/use/",
-      "title": "Use Bridge 0.1.0 · Bridge",
+      "title": "Use Bridge 0.1.1 · Bridge",
       "indexable": true,
       "required": true,
       "terminal": false
@@ -39,8 +39,8 @@
     },
     {
       "id": "release-stable",
-      "path": "/releases/0.1.0/",
-      "title": "Release 0.1.0 · Bridge",
+      "path": "/releases/0.1.1/",
+      "title": "Release 0.1.1 · Bridge",
       "indexable": true,
       "required": true,
       "terminal": false
@@ -181,12 +181,12 @@
     {
       "action": "qualification-evidence",
       "handoff": "qualification-evidence",
-      "url": "https://github.com/SupraCraft/Bridge/releases/download/v0.1.0/bridge-release-qualification.json"
+      "url": "https://github.com/SupraCraft/Bridge/releases/download/v0.1.1/bridge-release-qualification.json"
     },
     {
       "action": "download-artifact",
       "handoff": "artifact-download",
-      "url_prefix": "https://github.com/SupraCraft/Bridge/releases/download/v0.1.0/"
+      "url_prefix": "https://github.com/SupraCraft/Bridge/releases/download/v0.1.1/"
     }
   ],
   "discovery": {

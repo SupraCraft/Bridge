@@ -8,7 +8,7 @@
     "normal_product_development_allowed": false,
     "direct_public_fixes": "exception-and-reconciliation-required"
   },
-  "source_version": "0.1.1-dev",
+  "source_version": "0.1.2-dev",
   "brand": {
     "organization": "SupraCraft",
     "contract_version": "0.1.0-candidate",

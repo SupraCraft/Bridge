@@ -1,34 +1,35 @@
 {
   "schema": "bridge-public-stable-release/1",
-  "version": "0.1.0",
-  "tag": "v0.1.0",
+  "version": "0.1.1",
+  "tag": "v0.1.1",
   "channel": "stable",
-  "published_at": "2026-08-29T07:55:45Z",
-  "release_url": "https://github.com/SupraCraft/Bridge/releases/tag/v0.1.0",
-  "info_url": "https://supracraft.github.io/Bridge/releases/0.1.0/",
+  "published_at": "2026-09-09T14:48:43Z",
+  "release_url": "https://github.com/SupraCraft/Bridge/releases/tag/v0.1.1",
+  "info_url": "https://supracraft.github.io/Bridge/releases/0.1.1/",
   "maven": {
-    "available": false,
-    "group": "io.github.supracraft.bridge",
-    "version": "0.1.0",
-    "reason": "Historical 0.1.0 Maven coordinates remain private to Bridge-private; use the retained release assets below."
+    "available": true,
+    "repository": "https://maven.pkg.github.com/SupraCraft/Bridge",
+    "group": "io.github.supracraft",
+    "version": "0.1.1",
+    "requires_authentication": true
   },
   "artifacts": {
     "bridge": {
-      "name": "supracraft-bridge-0.1.0.jar",
-      "download_url": "https://github.com/SupraCraft/Bridge/releases/download/v0.1.0/supracraft-bridge-0.1.0.jar",
-      "sha256": "7e3910fd4e3a0a1e2401ee28b67cd023ca931b9fbde3f8d9cef655b2a4ee63e1"
+      "name": "supracraft-bridge-0.1.1.jar",
+      "download_url": "https://github.com/SupraCraft/Bridge/releases/download/v0.1.1/supracraft-bridge-0.1.1.jar",
+      "sha256": "e3b6729e3fa221ec5d265e1194c55e428e7b805f427d679ef26388564a68d6b9"
     },
     "bridge-asm": {
-      "name": "supracraft-bridge-asm-0.1.0.jar",
-      "download_url": "https://github.com/SupraCraft/Bridge/releases/download/v0.1.0/supracraft-bridge-asm-0.1.0.jar",
-      "sha256": "bcc5e26bc73d0db6fd73937c4cf23d345ed533d6547de629f621f78aef677c34"
+      "name": "supracraft-bridge-asm-0.1.1.jar",
+      "download_url": "https://github.com/SupraCraft/Bridge/releases/download/v0.1.1/supracraft-bridge-asm-0.1.1.jar",
+      "sha256": "aa4599a7ba2d3f1be6f44e26ce8da56e4836bc173b8f89326be265cc2cdcb3a6"
     },
     "bridge-plugin": {
-      "name": "supracraft-bridge-plugin-0.1.0.jar",
-      "download_url": "https://github.com/SupraCraft/Bridge/releases/download/v0.1.0/supracraft-bridge-plugin-0.1.0.jar",
-      "sha256": "ba1c11cee85f4edc70c4f74867335516efdbb3aa06efb56def63d01073defb75"
+      "name": "supracraft-bridge-plugin-0.1.1.jar",
+      "download_url": "https://github.com/SupraCraft/Bridge/releases/download/v0.1.1/supracraft-bridge-plugin-0.1.1.jar",
+      "sha256": "32500d03baf53a4e516779c9e79e27e3db9cf19b6e10d99f97c4fc17068f9608"
     }
   },
-  "qualification": "https://github.com/SupraCraft/Bridge/releases/download/v0.1.0/bridge-release-qualification.json",
-  "summary": "First stable SupraCraft Bridge release, qualified across its declared host JVM and class-file compatibility envelope."
+  "qualification": "https://github.com/SupraCraft/Bridge/releases/download/v0.1.1/bridge-release-qualification.json",
+  "summary": "Stable SupraCraft Bridge 0.1.1 release, qualified across its declared host JVM and class-file compatibility envelope."
 }
