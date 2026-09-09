@@ -46,7 +46,7 @@ See `ARTIFACT_IDENTITY.md`, `VERSIONING.md`, and `docs/artifact-consumption.md`.
 
 ## Version semantics
 
-- checked-in development source line: `X.Y.Z-dev` (currently `0.1.1-dev`)
+- checked-in stable source line: `0.1.1`
 - normal CI publication: immutable `X.Y.Z-dev.<github-run-number>`
 - release candidate: `X.Y.Z-rc.N`
 - current stable release/tag: `0.1.0` / `v0.1.0` (historical release assets; its Maven coordinates remain private)
