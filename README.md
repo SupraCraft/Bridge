@@ -1,5 +1,11 @@
 # Bridge
 
+<p align="center">
+  <img src="docs/assets/brand/hero.svg" alt="A source panel and class-file panel connected across the Bridge project’s modern bridge silhouette." width="900">
+</p>
+
+**Source to anywhere.**
+
 [![Build Status](https://github.com/SupraCraft/Bridge/actions/workflows/build.yml/badge.svg)](https://github.com/SupraCraft/Bridge/actions/workflows/build.yml)
 
 Bridge is a post-compile Maven plugin and supporting bytecode library that adds bytecode-level language features using existing Java semantics.
